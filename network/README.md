@@ -1,6 +1,6 @@
 # Install Iroha
 
-Iorha is installed in 4 _t3.medium_ Amazon cloud EC2 virtual machines with 2cores at 3.1GHz and 4GB of RAM. 
+This instructions are intended for Linux, if you wanto to build iroha on Windows, IOS or a Docker container go [here](https://iroha.readthedocs.io/en/latest/guides/build.html).. 
 
 ## Instructions
 In terminal do
@@ -42,7 +42,7 @@ In nano search a uncomment line
 ```
 max_prepared_transactions = 100
 ```
-Download [dependicies](https://www.dropbox.com/s/6f8azu8yotcz5ic/dependencies.zip?dl=0) package and [iroha](https://www.dropbox.com/s/a886c3bl38qg5le/iroha.tar.xz?dl=0) installation file
+Download [dependencies](https://www.dropbox.com/s/6f8azu8yotcz5ic/dependencies.zip?dl=0) package and [iroha](https://www.dropbox.com/s/a886c3bl38qg5le/iroha.tar.xz?dl=0) installation file
 
 In terminal
 ```

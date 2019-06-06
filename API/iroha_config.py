@@ -52,3 +52,20 @@ asset_precision = 2
 # user_p_key = IrohaCrypto.private_key()
 # print('private: ', user_p_key)
 # print('public: ', IrohaCrypto.derive_public_key('f101537e319568c765b2cc89698325604991dca57b9716b58016b253506cab70'))
+
+
+# #chief node
+# ######################
+# chief_private_key = '054e294d86bedf9a43cf20542cade6e57addfd4294a276042be4ba83c73f8d9e'
+# chief_public_key = IrohaCrypto.derive_public_key(chief_private_key)
+# chief_name = 'chief'
+# chief_account_id = chief_name + '@' + domain_id
+# iroha_chief = Iroha('chief@federated')
+#
+# #worker1 node
+# ######################
+# worker1_private_key = '7a3a8efe3fbfac57af55e8d2a4b20e27b19444c4d240924dd1bd57701a5a0731'
+# worker1_public_key = IrohaCrypto.derive_public_key(worker1_private_key)
+# worker1_name = 'worker1'
+# worker1_account_id = worker1_name + '@' + domain_id
+# iroha_worker1 = Iroha('worker1@federated')

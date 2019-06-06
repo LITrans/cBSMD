@@ -6,6 +6,8 @@ import iroha_config as irocon
 if sys.version_info[0] < 3:
     raise Exception('Python 3 or a more recent version is required.')
 
+# Network setup. All operations in the setup are made by the admin
+
 #########################################################################################
 # The firs step in the creation of the BSMD is to create a domain and asset for the nodes
 # The admin node is in charge of do this, hence all transactions need to be signed by him
@@ -22,16 +24,33 @@ irofun.create_asset(irocon.domain_individual,irocon.asset_individual,irocon.asse
 
 
 ########################################################################################
-# The second step is the creations of passive Nodes (also called accounts).
+# The second step is the creation of passive Nodes (also called accounts).
 # First define the name of the passive node
-node_name = 'Moto'
-# Nodes need a public and private key for signing transactions. The private key are use to derive the public key.
-# private key are never shared and nodes will sign the ledger with the public key
+node1_name = 'Sandro'
+# Nodes need public and private keys for signing transactions. The private key is used to derive the public key.
+# Private key is never shared and nodes will sign the ledger with the public key
 # To create private and public keys for passive nodes use
-node_private_key = IrohaCrypto.private_key()
-node_public_key = IrohaCrypto.derive_public_key(node_private_key)
+node1_private_key = IrohaCrypto.private_key()
+node1_public_key = IrohaCrypto.derive_public_key(node1_private_key)
 
+# Admin node can create user accounts in a specific domain and add some assets to his account.
+# We will create a user in the individual domain
+irofun.create_account_with_assets(node1_name, node1_public_key, irocon.domain_individual, '1000',
+                                       irocon.asset_individual_id)
 
+# Also is possible to create user accounts with no assets. But first define the name and the private and public keys
+# We will create a user in the vehicle domain
+node2_name = 'Ford Fiesta'
+node2_private_key = IrohaCrypto.private_key()
+node2_public_key = IrohaCrypto.derive_public_key(node2_private_key)
+irofun.create_account(node2_name, node2_public_key, irocon.domain_vehicle)
+# We can add some assets to the user
+irofun.create_assets_for_user(node2_name,irocon.domain_vehicle,'5000',irocon.asset_vehicle_id)
+############################
+############################
+# change the name domain_id for domain try to use only names and create the ids on each function
+############################
+############################
 
 
 

@@ -95,7 +95,7 @@ def create_asset(domain_id, asset_name, asset_precision):
     send_transaction_and_print_status(tx)
 
 @trace
-def create_account_user(name, public_key, domain_id, asset_qty, asset_id):
+def create_account_with_assets(name, public_key, domain_id, asset_qty, asset_id):
     """
     Create a personal account. This function works in three steps
         1. Create an account with a name, in a domain and a public key
@@ -139,6 +139,60 @@ def create_account_user(name, public_key, domain_id, asset_qty, asset_id):
                       amount=asset_qty)])
     IrohaCrypto.sign_transaction(tx, iroha_config.admin_private_key)
     send_transaction_and_print_status(tx)
+
+@trace
+def create_assets_for_user(name, domain_id, asset_qty, asset_id):
+    """
+    Create a personal account. This function works in three steps
+        1. Create an account with a name, in a domain and a public key
+        2. The admin create credit (assets) for the account (credit is created only if the user
+           buy it)
+        3. The admin transfer the credit to the user
+    :param name: (str) Name of the node we are creating
+    :param domain_id: (str) Name of the domain the user wants to join
+    :param asset_qty: (float) Quantity of assets the node buy
+    :param asset_id: (name#domain) Name of asset the node buy
+    :return: null:
+    """
+    tx = iroha_config.iroha.transaction([iroha_config.iroha.command('AddAssetQuantity',
+                                          asset_id=asset_id,
+                                          amount=asset_qty)])
+    IrohaCrypto.sign_transaction(tx, iroha_config.admin_private_key)
+    send_transaction_and_print_status(tx)
+
+    dest_account_id = name + '@' + domain_id
+    tx = iroha_config.iroha.transaction([
+        iroha_config.iroha.command('TransferAsset',
+                      src_account_id='admin@test',
+                      dest_account_id=dest_account_id,
+                      asset_id=asset_id,
+                      description='asset created for node',
+                      amount=asset_qty)])
+    IrohaCrypto.sign_transaction(tx, iroha_config.admin_private_key)
+    send_transaction_and_print_status(tx)
+
+@trace
+def create_account(name, public_key, domain_id):
+    """
+    Create a personal account.
+    :param name: (str) Name of the node we are creating
+    :param public_key: (str) public key of the node
+    :param domain_id: (str) Name of the domain the user wants to join
+    :return: null:
+
+    Usage example:
+    create_account_user('Tommy', 'key', 'federated', '5', fedcoin#federated)
+    """
+    # 1. Create account
+    tx = iroha_config.iroha.transaction(
+        [iroha_config.iroha.command('CreateAccount',
+                       account_name=name,
+                       domain_id=domain_id,
+                       public_key=public_key)])
+    IrohaCrypto.sign_transaction(tx, iroha_config.admin_private_key)
+    send_transaction_and_print_status(tx)
+
+
 
 
 @trace

@@ -36,7 +36,7 @@ node1_public_key = IrohaCrypto.derive_public_key(node1_private_key)
 # Admin node can create user accounts in a specific domain and add some assets to his account.
 # We will create a user in the individual domain
 irofun.create_account_with_assets(node1_name, node1_public_key, irocon.domain_individual, '1000',
-                                       irocon.asset_individual_id)
+                                       irocon.asset_individual)
 
 # Also is possible to create user accounts with no assets. But first define the name and the private and public keys
 # We will create a user in the vehicle domain
@@ -45,7 +45,7 @@ node2_private_key = IrohaCrypto.private_key()
 node2_public_key = IrohaCrypto.derive_public_key(node2_private_key)
 irofun.create_account(node2_name, node2_public_key, irocon.domain_vehicle)
 # We can add some assets to the user
-irofun.create_assets_for_user(node2_name,irocon.domain_vehicle,'5000',irocon.asset_vehicle_id)
+irofun.create_assets_for_user(node2_name, irocon.domain_vehicle, '5000', irocon.asset_vehicle)
 ############################
 ############################
 # change the name domain_id for domain try to use only names and create the ids on each function

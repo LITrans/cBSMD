@@ -1,6 +1,6 @@
 # Install Iroha
 
-This instructions are intended for Linux, if you wanto to build iroha on Windows, IOS or a Docker container go [here](https://iroha.readthedocs.io/en/latest/guides/build.html).. 
+This instructions are intended for Linux, if you want to build Iroha on Windows, IOS or a Docker container go [here](https://iroha.readthedocs.io/en/latest/guides/build.html).. 
 
 ## Instructions
 In terminal do
@@ -30,7 +30,7 @@ Configure postgres
 ```
 sudo passwd postgres
 ```
-Set a pasword #(recommend for testing "postgres")
+Set a password #(recommend for testing "postgres")
 ```
 su - postgres
 psql -d template1 -c "ALTER USER postgres WITH PASSWORD 'postgres';"
@@ -38,7 +38,7 @@ exit
 
 sudo nano /etc/postgresql/10/main/postgresql.conf
 ```
-In nano search a uncomment line
+In nano search a un-comment line
 ```
 max_prepared_transactions = 100
 ```
@@ -78,19 +78,19 @@ sudo cp /opt/dependencies/c-ares/lib/libcares.so.2 /usr/lib/x86_64-linux-gnu/
 sudo cp /opt/dependencies/grpc/lib/libaddress_sorting.so /usr/lib/x86_64-linux-gnu/
 ```
 
-# Run Iroha in one node
-Is possilbe to run Iroha in a single node. You can use this approach If you want to do tests before running Iroha in four nodes
+# Run one Iroha node in a single computer
+Is possible to run Iroha in a single node. You can use this approach If you want to do tests before running Iroha in four nodes
 ```shell
 irohad --config configSingle/config.sample --genesis_block configSingle/genesis.block --keypair_name configSingle/node0
 ```
 
-## Aditional Commands
+## Additional Commands
 If you like to clean and start fresh
 ```shell
 irohad --config configSingle/config.sample --genesis_block configSingle/genesis.block --keypair_name  configSingle/node0 --overwrite_ledger
 ```
 
-# Run Iroha in Four nodes
+# Run Iroha nodes on different computers
 On each machine do the following
 1. Open the [genesis.block](genesis.block) file and update the 'address' entry to correspond the ip of each machine. For example, the entry:
 ```json
@@ -110,7 +110,7 @@ will correspond to node0. Inspect the file [node0.pub](node0.pub) and see that `
 irohad --config config/config.sample --genesis_block config/genesis.block --keypair_name config/node0
 ```
 
-## Aditional Commands
+## Additional Commands
 If you like to clean and start fresh
 ```shell
 irohad --config config/config.sample --genesis_block config/genesis.block --keypair_name config/node0 --overwrite_ledger

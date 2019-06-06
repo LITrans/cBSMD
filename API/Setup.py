@@ -1,13 +1,44 @@
 #!/usr/bin/env python3
-import binascii
 import sys
-import iroha_functions
-import iroha_config
-
+from iroha import IrohaCrypto
+import iroha_functions as irofun
+import iroha_config as irocon
 if sys.version_info[0] < 3:
     raise Exception('Python 3 or a more recent version is required.')
 
-iroha_functions.create_domain_and_asset()
+#########################################################################################
+# The firs step in the creation of the BSMD is to create a domain and asset for the nodes
+# The admin node is in charge of do this, hence all transactions need to be signed by him
+# 1. You can create a domain with an asset
+# create_domain_and_asset(domain_id, default_role, asset_name, asset_precision)
+irofun.create_domain_and_asset(irocon.domain_vehicle, irocon.default_role, irocon.asset_vehicle, irocon.asset_precision)
+
+# 2. You can create a domain with no assets
+irofun.create_domain(irocon.domain_individual, irocon.default_role)
+
+# 3. You can add an asset to a domain already created. In 2 we have created the domain *individual*, no we can create
+# an asset for individuals
+irofun.create_asset(irocon.domain_individual,irocon.asset_individual,irocon.asset_precision)
+
+
+########################################################################################
+# The second step is the creations of passive Nodes (also called accounts).
+# First define the name of the passive node
+node_name = 'Moto'
+# Nodes need a public and private key for signing transactions. The private key are use to derive the public key.
+# private key are never shared and nodes will sign the ledger with the public key
+# To create private and public keys for passive nodes use
+node_private_key = IrohaCrypto.private_key()
+node_public_key = IrohaCrypto.derive_public_key(node_private_key)
+
+
+
+
+
+
+
+
+
 #################################
 # workers nodes setup
 ################################

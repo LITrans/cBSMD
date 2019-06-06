@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
 from iroha.primitive_pb2 import can_set_my_account_detail
-from iroha import Iroha, IrohaGrpc
 from iroha import IrohaCrypto
 import binascii
 import iroha_config
@@ -15,9 +14,9 @@ def trace(func):
     """
     def tracer(*args, **kwargs):
         name = func.__name__
-        # print('\tEntering "{}"'.format(name))
+        print('\tEntering "{}"'.format(name))
         result = func(*args, **kwargs)
-        # print('\tLeaving "{}"'.format(name))
+        print('\tLeaving "{}"'.format(name))
         return result
     return tracer
 
@@ -30,28 +29,69 @@ def send_transaction_and_print_status(transaction):
     :param transaction: Transaction we are sending to the BSMD
     :return: null:
     """
-    # print(transaction)
+    print('This print will make the transactions run slower. When developing is useful to have this for debugging')
+    print('Comment all prints in function send_transaction_and_print_status to make faster transactions')
     hex_hash = binascii.hexlify(IrohaCrypto.hash(transaction))
-    # print('Transaction hash = {}, creator = {}'.format(
-    #     hex_hash, transaction.payload.reduced_payload.creator_account_id))
+    print('Transaction hash = {}, creator = {}'.format(
+        hex_hash, transaction.payload.reduced_payload.creator_account_id))
     iroha_config.network.send_tx(transaction)
-    # for status in iroha_config.network.tx_status_stream(transaction):
-        # print(status)
+    for status in iroha_config.network.tx_status_stream(transaction):
+        print(status)
 
 
 @trace
-def create_domain_and_asset():
+def create_domain_and_asset(domain_id, default_role, asset_name, asset_precision):
     """
-    Create a domain, default user and define asset
+    Creates a domain and an asset in the domain
+    :param domain_id: id of the domain, e.g. entity, vehicle, individual
+    :param default_role: default role users have, e.g., user
+    :param asset_name: name of the asset, e.g., entityCoin
+    :param asset_precision: number of decimals accepted in the asset
     :return: null
     """
-    # print(iroha_config.domain_id, iroha_config.default_role, iroha_config.asset_name, iroha_config.domain_id, iroha_config.asset_precision, iroha_config.admin_private_key)
+    commands = [iroha_config.iroha_admin.command('CreateDomain',
+                                                 domain_id=domain_id,
+                                                 default_role=default_role),
+                iroha_config.iroha_admin.command('CreateAsset',
+                                                 asset_name=asset_name,
+                                                 domain_id=domain_id,
+                                                 precision=asset_precision)]
 
-    commands = [iroha_config.iroha.command('CreateDomain', domain_id=iroha_config.domain_id,
-                                           default_role=iroha_config.default_role),
-                iroha_config.iroha.command('CreateAsset', asset_name=iroha_config.asset_name,
-                                           domain_id=iroha_config.domain_id, precision=iroha_config.asset_precision)]
-    tx = IrohaCrypto.sign_transaction(iroha_config.iroha.transaction(commands), iroha_config.admin_private_key)
+    tx = IrohaCrypto.sign_transaction(iroha_config.iroha_admin.transaction(commands), iroha_config.admin_private_key)
+    send_transaction_and_print_status(tx)
+
+
+@trace
+def create_domain(domain_id, default_role):
+    """
+    Creates a domain
+    :param domain_id: id of the domain, e.g. entity, vehicle, individual
+    :param default_role: default role users have, e.g., user
+    :return:
+    """
+    tx = iroha_config.iroha.transaction(
+        [iroha_config.iroha_admin.command('CreateDomain',
+                                          domain_id=domain_id,
+                                          default_role=default_role)])
+
+    IrohaCrypto.sign_transaction(tx, iroha_config.admin_private_key)
+    send_transaction_and_print_status(tx)
+
+@trace
+def create_asset(domain_id, asset_name, asset_precision):
+    """
+    Creates an asset in the domain_id
+    :param domain_id: id of the domain, e.g. entity, vehicle, individual
+    :param asset_name: name of the asset, e.g., entityCoin
+    :param asset_precision: number of decimals accepted in the asset
+    :return:
+    """
+    tx = iroha_config.iroha.transaction(
+        [iroha_config.iroha_admin.command('CreateAsset',
+                                          asset_name=asset_name,
+                                          domain_id=domain_id,
+                                          precision=asset_precision)])
+    IrohaCrypto.sign_transaction(tx, iroha_config.admin_private_key)
     send_transaction_and_print_status(tx)
 
 @trace

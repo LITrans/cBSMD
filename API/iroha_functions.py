@@ -194,11 +194,11 @@ def create_account(name, public_key, domain):
 
 
 @trace
-def get_balance(domain, user, private_key):
+def get_balance(domain, name, private_key):
     """
     Get the balance of the account
     :param domain: (str) name of the domain
-    :param user: (str) name of the transaction signer
+    :param name: (str) name of the transaction signer
     :param private_key: (str) Private key of the user
     :return: data: (array) asset id and assets quantity
     Return example:
@@ -207,7 +207,7 @@ def get_balance(domain, user, private_key):
     balance: "1000"
     ]
     """
-    account_id = user + '@' + domain
+    account_id = name + '@' + domain
     iroha = Iroha(account_id)
     query = iroha.query('GetAccountAssets',
                         account_id=account_id)
@@ -221,19 +221,19 @@ def get_balance(domain, user, private_key):
 
 
 @trace
-def grants_access_to_set_details(iroha, my_id_account, private_key, grant_account_id):
+def grants_access_to_set_details(your_domain, your_name, private_key, grant_domain, grant_account):
     """
-    Grant access to write details in own identity
-    :param iroha: (Iroha('name@domain')) Address for connecting to a domain
-    :param my_id_account: (name@domain) Id of the user granting the access
-    :param private_key: (str) Private key of the user granting the access
-    :param grant_account_id: (name@domain) Id of the user we want to grant the access
-    :return: null:
-
-    Usage example:
-    grants_access_to_set_details(Iroha('david@federated'),IrohaGrpc('127.0.0.1'), 'david@federated','key',
-                                'juan@federated')
+    Grant node to set details on your profile
+    :param your_domain: (str) your domain. Domain of the granter
+    :param your_name:  (str) you name. Name of the granter
+    :param private_key: (str) private key for signing. Private key of the granter
+    :param grant_domain: (str) domain of the node how will have access permissions
+    :param grant_account: (str) name of the node how will have access permissions
+    :return:
     """
+    my_id_account = your_name + '@' + your_domain
+    grant_account_id = grant_account + '@' + grant_domain
+    iroha = Iroha(my_id_account)
     tx = iroha.transaction([
         iroha.command('GrantPermission',
                       account_id=grant_account_id,
@@ -245,21 +245,21 @@ def grants_access_to_set_details(iroha, my_id_account, private_key, grant_accoun
 
 
 @trace
-def set_detail_to_node(iroha, account_id, private_key, detail_key, detail_value):
+def set_detail_to_node(domain, name, private_key, detail_key, detail_value):
     """
-    Set the details of a node. In federated learning the details are in JSON format and
-    contains the address (location) where the weight is stored (if the weight is small enough it can be
-    embedded to the block if needed)
-    :param iroha: (Iroha('name@domain')) Address for connecting to a domain
-    :param account_id: (name@domain) Id of the user in the domain
+    Set the details of a node. The details can be stored in JSON format with limit of 4096 characters per detail
+    :param domain: (str) name of the domain
+    :param name: (str) name of the transaction signer
     :param private_key: (str) Private key of the user
     :param detail_key: (str) Name of the detail we want to set
     :param detail_value: (str) Value of the detail
     :return: null:
 
     Usage example:
-    set_detail_to_node(Iroha('david@federated'),IrohaGrpc('127.0.0.1'), 'david@federated', 'key', 'age', '33')
+    set_detail_to_node('vehicle'),'Ford fiesta', 'key', 'age', '33')
     """
+    account_id = name + '@' + domain
+    iroha = Iroha(account_id)
     tx = iroha.transaction([
         iroha.command('SetAccountDetail',
                       account_id=account_id,
@@ -271,22 +271,26 @@ def set_detail_to_node(iroha, account_id, private_key, detail_key, detail_value)
 
 
 @trace
-def transfer_assets(iroha, account_id, private_key, destination_account, asset_id, quantity, description):
+def transfer_assets(domain, from_name, private_key, to_name, asset_name, quantity, description):
     """
-    Transfer assets from one account to another
-    :param iroha: (Iroha(name@domain)) Address for connecting to a domain
-    :param account_id: (name@domain) Id of the user in the domain
-    :param private_key: (str) Private key of the user
-    :param destination_account: (name@domain) Id of the destination account
-    :param asset_id: (name#domain) Id of the asset we want to transfer
+
+    :param domain: (str) name of the domain from where the node is sending the assets
+    :param from_name: (str) name of the node who is sending the assets
+    :param private_key: (str) pk of the the sender
+    :param to_name: (str) name of the node receiving the assets
+    :param asset_name: (str) name of the asset to be transferred
     :param quantity: (float) Number of assets we want to transfer
     :param description: (str) Small message to the receiver of assets
-    :return: null:
+    :return:
 
-    Usage example:
-    transfer_assets(Iroha('david@federated'),IrohaGrpc('127.0.0.1'), 'david@federated', 'key',
-                    'toro@federated', 'fedcoin#federated', '2', 'Shut up and take my money')
+    Example:
+    transfer_assets('individuals','Dante', 'key', 'Toro', 'coin', '2', 'Shut up and take my money')
     """
+
+    account_id = from_name + '@' + domain
+    iroha = Iroha(account_id)
+    destination_account = to_name + '@' + domain
+    asset_id = asset_name + '#' + domain
     tx = iroha.transaction([
         iroha.command('TransferAsset',
                       src_account_id=account_id,

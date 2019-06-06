@@ -42,9 +42,6 @@ domain_individual = 'individual'
 asset_entity = 'entityCoin'
 asset_vehicle = 'vehicleCoin'
 asset_individual = 'individualCoin'
-asset_entity_id = asset_entity + '#' + domain_entity
-asset_vehicle_id = asset_vehicle + '#' + domain_vehicle
-asset_individual_id = asset_individual + '#' + domain_individual
 asset_precision = 2
 
 

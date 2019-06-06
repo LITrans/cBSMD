@@ -95,18 +95,18 @@ def create_asset(domain, asset_name, asset_precision):
     send_transaction_and_print_status(tx)
 
 @trace
-def create_account_with_assets(name, public_key, domain, asset_qty, asset_name):
+def create_account_with_assets(domain, name, public_key, asset_name, asset_qty):
     """
     Create a personal account. This function works in three steps
         1. Create an account with a name, in a domain and a public key
         2. The admin create credit (assets) for the account (credit is created only if the user
            buy it)
         3. The admin transfer the credit to the user
+    :param domain: (str) Name of the domain the user wants to join
     :param name: (str) Name of the node we are creating
     :param public_key: (str) public key of the node
-    :param domain: (str) Name of the domain the user wants to join
-    :param asset_qty: (float) Quantity of assets the node buy
     :param asset_name: Name of asset the node buy
+    :param asset_qty: (float) Quantity of assets the node buy
     :return: null:
 
     Usage example:
@@ -142,17 +142,17 @@ def create_account_with_assets(name, public_key, domain, asset_qty, asset_name):
     send_transaction_and_print_status(tx)
 
 @trace
-def create_assets_for_user(name, domain, asset_qty, asset_name):
+def create_assets_for_user(domain, name, asset_name, asset_qty):
     """
     Create a personal account. This function works in three steps
         1. Create an account with a name, in a domain and a public key
         2. The admin create credit (assets) for the account (credit is created only if the user
            buy it)
         3. The admin transfer the credit to the user
-    :param name: (str) Name of the node we are creating
     :param domain: (str) Name of the domain the user wants to join
-    :param asset_qty: (float) Quantity of assets the node buy
+    :param name: (str) Name of the node we are creating
     :param asset_name: (str) Name of asset the node buy
+    :param asset_qty: (float) Quantity of assets the node buy
     :return: null:
     """
     asset_id = asset_name + '#' + domain
@@ -173,13 +173,14 @@ def create_assets_for_user(name, domain, asset_qty, asset_name):
     IrohaCrypto.sign_transaction(tx, iroha_config.admin_private_key)
     send_transaction_and_print_status(tx)
 
+
 @trace
-def create_account(name, public_key, domain):
+def create_account(domain, name, public_key):
     """
     Create a personal account.
+    :param domain: (str) Name of the domain the user wants to join
     :param name: (str) Name of the node we are creating
     :param public_key: (str) public key of the node
-    :param domain: (str) Name of the domain the user wants to join
     :return: null:
     """
     # 1. Create account
@@ -271,11 +272,11 @@ def set_detail_to_node(domain, name, private_key, detail_key, detail_value):
 
 
 @trace
-def transfer_assets(domain, from_name, private_key, to_name, asset_name, quantity, description):
+def transfer_assets(domain, name, private_key, to_name, asset_name, quantity, description):
     """
-
+    Transfer assets from one account to another
     :param domain: (str) name of the domain from where the node is sending the assets
-    :param from_name: (str) name of the node who is sending the assets
+    :param name: (str) name of the node who is sending the assets
     :param private_key: (str) pk of the the sender
     :param to_name: (str) name of the node receiving the assets
     :param asset_name: (str) name of the asset to be transferred
@@ -287,7 +288,7 @@ def transfer_assets(domain, from_name, private_key, to_name, asset_name, quantit
     transfer_assets('individuals','Dante', 'key', 'Toro', 'coin', '2', 'Shut up and take my money')
     """
 
-    account_id = from_name + '@' + domain
+    account_id = name + '@' + domain
     iroha = Iroha(account_id)
     destination_account = to_name + '@' + domain
     asset_id = asset_name + '#' + domain
@@ -304,19 +305,19 @@ def transfer_assets(domain, from_name, private_key, to_name, asset_name, quantit
 
 
 @trace
-def get_detail_from_generator(iroha, account_id, private_key, generator_id, detail_id):
+def get_detail_from_generator(domain, name, private_key, generator_domain, generator_name, detail_id):
     """
     Consult a single detail writen by some generator
-    :param iroha: (Iroha(name@domain)) Address for connecting to a domain
-    :param account_id: (name@domain) Id of the user in the domain
+    :param domain: (str) name of the domain
+    :param name: (str) name of the node
     :param private_key: (str) Private key of the user
-    :param generator_id: (name@domain) Id of the user who create de detail
+    :param generator_domain: (str) domain of the user who create de detail
+    :param generator_name: (str) name of the user who create de detail
     :param detail_id: (string) Name of the detail
     :return: data: (json) solicited details of the user
 
     Usage example:
-    get_detail_from_generator(Iroha('david@federated'),IrohaGrpc('127.0.0.1'), 'david@federated', 'key',
-                                'david@federated', 'Address')
+    get_detail_from_generator('individual', 'David' 'key', 'vehicle', 'Sara' , 'Age')
 
     Return example:
     {
@@ -325,6 +326,9 @@ def get_detail_from_generator(iroha, account_id, private_key, generator_id, deta
         }
     }
     """
+    account_id = name + '@' + domain
+    generator_id = generator_name + '@' + generator_domain
+    iroha = Iroha(account_id)
     query = iroha.query('GetAccountDetail',
                         account_id=account_id,
                         writer=generator_id,
@@ -338,18 +342,18 @@ def get_detail_from_generator(iroha, account_id, private_key, generator_id, deta
 
 
 @trace
-def get_all_details_from_generator(iroha, account_id, private_key, generator_id):
+def get_all_details_from_generator(domain, name, private_key, generator_domain, generator_name):
     """
     Consult all the details generated by some node
-    :param iroha: (Iroha(name@domain)) Address for connecting to a domain
-    :param account_id: (name@domain) Id of the user in the domain
+    :param domain: (str) name of the domain
+    :param name: (str) name of the node
     :param private_key: (str) Private key of the user
-    :param generator_id: (name@domain) Id of the user who create de detail
+    :param generator_domain: (str) domain of the user who create de detail
+    :param generator_name: (str) name of the user who create de detail
     :return: data: (json) solicited details of the user
 
     Usage example:
-    get_detail_from_generator(Iroha('david@federated'),IrohaGrpc('127.0.0.1'), 'david@federated', 'key',
-                              'david@federated')
+    get_detail_from_generator('vehicle', 'Ford Fiesta', key, 'individual', 'david' )
 
     Return example:
     {
@@ -359,7 +363,9 @@ def get_all_details_from_generator(iroha, account_id, private_key, generator_id)
         }
     }
     """
-
+    account_id = name + '@' + domain
+    generator_id = generator_name + '@' + generator_domain
+    iroha = Iroha(account_id)
     query = iroha.query('GetAccountDetail',
                         account_id=account_id,
                         writer=generator_id)
@@ -373,11 +379,11 @@ def get_all_details_from_generator(iroha, account_id, private_key, generator_id)
 
 
 @trace
-def get_all_details(iroha, account_id, private_key):
+def get_all_details(domain, name, private_key):
     """
     Consult all details of the node
-    :param iroha: (Iroha(name@domain)) Address for connecting to a domain
-    :param account_id: (name@domain) Id of the user in the domain
+    :param domain: (str) name of the domain
+    :param name: (str) name of the node
     :param private_key: (str) Private key of the user
     :return: data: (json) solicited details of the user
 
@@ -400,6 +406,8 @@ def get_all_details(iroha, account_id, private_key):
         }
     }
     """
+    account_id = name + '@' + domain
+    iroha = Iroha(account_id)
     query = iroha.query('GetAccountDetail',
                         account_id=account_id)
     IrohaCrypto.sign_query(query, private_key)
@@ -413,25 +421,14 @@ def get_all_details(iroha, account_id, private_key):
 @trace
 def get_block(height):
     """
-    Get the balance of the account
-    :param iroha: (Iroha('name@domain')) Address for connecting to a domain
-    :param network: (IrohaGrpc('IP address')) Physical address of one node running the BSMD
-    :param account_id: (name@domain) Id of the user in the domain
-    :param private_key: (str) Private key of the user
-    :return: data: (array) asset id and assets quantity
-
-    Usage example:
-    get_balance(Iroha('david@federated'), IrohaGrpc('127.0.0.1'), 'david@federated', 'key')
-
-    Return example:
-    [asset_id: "fedcoin#federated"
-    account_id: "generator@federated"
-    balance: "1000"
-    ]
+    Query a block in the ledger
+    :param height:
+    :return:
     """
+
     iroha_config.iroha.blocks_query()
     query = iroha_config.iroha.query('GetBlock',
-                        height=height)
+                                     height=height)
     IrohaCrypto.sign_query(query, iroha_config.admin_private_key)
 
     block = iroha_config.network.send_query(query)

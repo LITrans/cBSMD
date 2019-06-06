@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 from iroha.primitive_pb2 import can_set_my_account_detail
-from iroha import IrohaCrypto
+from iroha import IrohaCrypto, Iroha
 import binascii
 import iroha_config
 import sys
@@ -194,23 +194,21 @@ def create_account(name, public_key, domain):
 
 
 @trace
-def get_balance(iroha, account_id, private_key):
+def get_balance(domain, user, private_key):
     """
     Get the balance of the account
-    :param iroha: (Iroha('name@domain')) Address for connecting to a domain
-    :param account_id: (name@domain) Id of the user in the domain
+    :param domain: (str) name of the domain
+    :param user: (str) name of the transaction signer
     :param private_key: (str) Private key of the user
     :return: data: (array) asset id and assets quantity
-
-    Usage example:
-    get_balance(Iroha('david@federated'), IrohaGrpc('127.0.0.1'), 'david@federated', 'key')
-
     Return example:
     [asset_id: "fedcoin#federated"
     account_id: "generator@federated"
     balance: "1000"
     ]
     """
+    account_id = user + '@' + domain
+    iroha = Iroha(account_id)
     query = iroha.query('GetAccountAssets',
                         account_id=account_id)
     IrohaCrypto.sign_query(query, private_key)

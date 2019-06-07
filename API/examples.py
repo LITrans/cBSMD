@@ -14,7 +14,7 @@ if sys.version_info[0] < 3:
 #####################
 # 2 Individual nodes
 #####################
-Johannes = 'Johannes'
+Johannes = 'johannes'# write al names with small caps
 Johannes_private_key = IrohaCrypto.private_key()
 Johannes_public_key = IrohaCrypto.derive_public_key(Johannes_private_key)
 irofun.create_account_with_assets(irocon.domain_individual, Johannes, Johannes_public_key, irocon.asset_individual,

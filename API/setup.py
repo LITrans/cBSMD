@@ -26,11 +26,14 @@ irofun.create_asset(irocon.domain_individual, irocon.asset_individual, irocon.as
 # ########################################################################################
 # # The second step is the creation of passive Nodes (also called accounts).
 # # First define the name of the passive node
-# node1_name = 'Sandro'
+# node1_name = 'sandro'  # small caps for name
 # # Nodes need public and private keys for signing transactions. The private key is used to derive the public key.
 # # Private key is never shared and nodes will sign the ledger with the public key
 # # To create private and public keys for passive nodes use
-# node1_private_key = IrohaCrypto.private_key()
+# # Ideally you should create private key with node2_private_key = IrohaCrypto.private_key(). For the sake of the example
+# # the private key is hardcoded so it is easy to reproduce de example
+# node1_private_key = '4d5c17de889044ff43d522123d7584dc96f9d1fe6cfd90860a2d9c1f58d38824'
+#
 # node1_public_key = IrohaCrypto.derive_public_key(node1_private_key)
 #
 # # Admin node can create user accounts in a specific domain and add some assets to his account.
@@ -40,12 +43,12 @@ irofun.create_asset(irocon.domain_individual, irocon.asset_individual, irocon.as
 #
 # # Also is possible to create user accounts with no assets. But first define the name and the private and public keys
 # # We will create a user in the vehicle domain
-# node2_name = 'Ford Fiesta'
-# node2_private_key = IrohaCrypto.private_key()
+# node2_name = 'gol'
+# node2_private_key = '0dee25b65cc30c2dea0ced919e6c613489de801de1544bba9c3d97fac18d7ec4'
 # node2_public_key = IrohaCrypto.derive_public_key(node2_private_key)
 # irofun.create_account(irocon.domain_vehicle, node2_name, node2_public_key)
 # # We can add some assets to the user
 # irofun.create_assets_for_user(irocon.domain_vehicle, node2_name, irocon.asset_vehicle, '5000')
-
-
-# admin_private_key = 'f10
+#
+#
+#

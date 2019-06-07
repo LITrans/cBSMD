@@ -49,6 +49,7 @@ def create_domain_and_asset(domain, default_role, asset_name, asset_precision):
     :param asset_precision: number of decimals accepted in the asset
     :return: null
     """
+    print(domain, default_role, asset_name, asset_precision)
     commands = [iroha_config.iroha_admin.command('CreateDomain',
                                                  domain_id=domain,
                                                  default_role=default_role),
@@ -69,7 +70,8 @@ def create_domain(domain, default_role):
     :param default_role: default role users have, e.g., user
     :return:
     """
-    tx = iroha_config.iroha.transaction(
+    print(domain, default_role)
+    tx = iroha_config.iroha_admin.transaction(
         [iroha_config.iroha_admin.command('CreateDomain',
                                           domain_id=domain,
                                           default_role=default_role)])
@@ -86,7 +88,7 @@ def create_asset(domain, asset_name, asset_precision):
     :param asset_precision: number of decimals accepted in the asset
     :return:
     """
-    tx = iroha_config.iroha.transaction(
+    tx = iroha_config.iroha_admin.transaction(
         [iroha_config.iroha_admin.command('CreateAsset',
                                           asset_name=asset_name,
                                           domain_id=domain,
@@ -114,8 +116,8 @@ def create_account_with_assets(domain, name, public_key, asset_name, asset_qty):
     """
     asset_id = asset_name + '#' + domain
     # 1. Create account
-    tx = iroha_config.iroha.transaction(
-        [iroha_config.iroha.command('CreateAccount',
+    tx = iroha_config.iroha_admin.transaction(
+        [iroha_config.iroha_admin.command('CreateAccount',
                        account_name=name,
                        domain_id=domain,
                        public_key=public_key)])
@@ -123,7 +125,7 @@ def create_account_with_assets(domain, name, public_key, asset_name, asset_qty):
     send_transaction_and_print_status(tx)
 
     # 2. Create credit for the user
-    tx = iroha_config.iroha.transaction([iroha_config.iroha.command('AddAssetQuantity',
+    tx = iroha_config.iroha_admin.transaction([iroha_config.iroha_admin.command('AddAssetQuantity',
                                           asset_id=asset_id,
                                           amount=asset_qty)])
     IrohaCrypto.sign_transaction(tx, iroha_config.admin_private_key)
@@ -131,8 +133,8 @@ def create_account_with_assets(domain, name, public_key, asset_name, asset_qty):
 
     # 3. Transfer credit to the user
     dest_account_id = name + '@' + domain
-    tx = iroha_config.iroha.transaction([
-        iroha_config.iroha.command('TransferAsset',
+    tx = iroha_config.iroha_admin.transaction([
+        iroha_config.iroha_admin.command('TransferAsset',
                       src_account_id='admin@test',
                       dest_account_id=dest_account_id,
                       asset_id=asset_id,
@@ -156,15 +158,15 @@ def create_assets_for_user(domain, name, asset_name, asset_qty):
     :return: null:
     """
     asset_id = asset_name + '#' + domain
-    tx = iroha_config.iroha.transaction([iroha_config.iroha.command('AddAssetQuantity',
+    tx = iroha_config.iroha_admin.transaction([iroha_config.iroha_admin.command('AddAssetQuantity',
                                           asset_id=asset_id,
                                           amount=asset_qty)])
     IrohaCrypto.sign_transaction(tx, iroha_config.admin_private_key)
     send_transaction_and_print_status(tx)
 
     dest_account_id = name + '@' + domain
-    tx = iroha_config.iroha.transaction([
-        iroha_config.iroha.command('TransferAsset',
+    tx = iroha_config.iroha_admin.transaction([
+        iroha_config.iroha_admin.command('TransferAsset',
                       src_account_id='admin@test',
                       dest_account_id=dest_account_id,
                       asset_id=asset_id,
@@ -184,8 +186,8 @@ def create_account(domain, name, public_key):
     :return: null:
     """
     # 1. Create account
-    tx = iroha_config.iroha.transaction(
-        [iroha_config.iroha.command('CreateAccount',
+    tx = iroha_config.iroha_admin.transaction(
+        [iroha_config.iroha_admin.command('CreateAccount',
                        account_name=name,
                        domain_id=domain,
                        public_key=public_key)])

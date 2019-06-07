@@ -33,13 +33,14 @@ iroha_admin = Iroha('admin@test')
 # "can_transfer"
 default_role = 'user'
 
-# Domain are groups of accounts.
+# Domain are groups of accounts. (small caps only)
 # This parameters are for setting the characteristics of each domain.
 domain_entity = 'entity'
 domain_vehicle = 'vehicle'
 domain_individual = 'individual'
 # You can create as many assets as you want on each domain as long as the the name of the asset is unique
-asset_entity = 'entityCoin'
-asset_vehicle = 'vehicleCoin'
-asset_individual = 'individualCoin'
+# (small caps only)
+asset_entity = 'entitycoin'
+asset_vehicle = 'vehiclecoin'
+asset_individual = 'individualcoin'
 asset_precision = 2

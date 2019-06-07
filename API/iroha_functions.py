@@ -246,7 +246,7 @@ def grants_access_to_set_details(your_domain, your_name, private_key, grant_doma
 
 
 @trace
-def set_detail_to_node(domain, name, private_key, detail_key, detail_value):
+def set_detail(domain, name, private_key, detail_key, detail_value):
     """
     Set the details of a node. The details can be stored in JSON format with limit of 4096 characters per detail
     :param domain: (str) name of the domain
@@ -257,10 +257,39 @@ def set_detail_to_node(domain, name, private_key, detail_key, detail_value):
     :return: null:
 
     Usage example:
-    set_detail_to_node('vehicle'),'Ford fiesta', 'key', 'age', '33')
+    set_detail('vehicle'),'Ford fiesta', 'key', 'age', '33')
     """
     account_id = name + '@' + domain
     iroha = Iroha(account_id)
+    tx = iroha.transaction([
+        iroha.command('SetAccountDetail',
+                      account_id=account_id,
+                      key=detail_key,
+                      value=detail_value)
+    ])
+    IrohaCrypto.sign_transaction(tx, private_key)
+    send_transaction_and_print_status(tx)
+
+
+@trace
+def set_detail_to_node(domain, name, private_key, to_domain, to_name, detail_key, detail_value):
+    """
+    Set the details of a node. The details can be stored in JSON format with limit of 4096 characters per detail
+    :param domain: (str) domain of the signer
+    :param name: (str) name signer
+    :param private_key: (str) Private key of the signer
+    :param to_domain: (str) domain of the receptor
+    :param to_name: (str) name of the receptor
+    :param detail_key: (str) Name of the detail we want to set
+    :param detail_value: (str) Value of the detail
+    :return: null:
+
+    Usage example:
+    set_detail('vehicle'),'Ford fiesta', 'key', 'age', '33')
+    """
+    account = name + '@' + domain
+    iroha = Iroha(account)
+    account_id = to_name + '@' + to_domain
     tx = iroha.transaction([
         iroha.command('SetAccountDetail',
                       account_id=account_id,

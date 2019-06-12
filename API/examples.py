@@ -17,7 +17,8 @@ if sys.version_info[0] < 3:
 Johannes = 'johannes'  # write al names with small caps
 Johannes_private_key = 'e66dcb02367ae45449075839bbfedaf9ae4f9d579cb5601e82e0df341691ae2c'
 Johannes_public_key = IrohaCrypto.derive_public_key(Johannes_private_key)
-irofun.create_account_with_assets(irocon.domain_individual, Johannes, Johannes_public_key, irocon.asset_individual, '1000')
+irofun.create_account_with_assets(irocon.domain_individual, Johannes, Johannes_public_key, irocon.asset_individual,
+                                  '1000')
 #####################
 David = 'david'
 David_private_key = '2297b39c5331af17731d9bd6e04070e575b7ad9c18ca951cb6d5cd7b2abb240d'

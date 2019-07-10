@@ -35,12 +35,16 @@ default_role = 'user'
 
 # Domain are groups of accounts. (small caps only)
 # This parameters are for setting the characteristics of each domain.
-domain_entity = 'entity'
-domain_vehicle = 'vehicle'
-domain_individual = 'individual'
+domain_carbon_tax = 'carbontaxes'
+domain_carbon_payments = 'carbonpayments'
+
 # You can create as many assets as you want on each domain as long as the the name of the asset is unique
-# (small caps only)
-asset_entity = 'entitycoin'
-asset_vehicle = 'vehiclecoin'
-asset_individual = 'individualcoin'
+# Exchange rate 1 carbontax = 1 carboncoin
+asset_carbon_tax = 'carbontax'
+asset_carbon_payments = 'carboncoin'
 asset_precision = 2
+
+# Initial amount of carbon tokes everyone start with
+carbontax_init = 493.79
+# Initial amount of carbon coin everyone start with
+carboncoin_init = 0

@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 import sys
 from iroha import IrohaCrypto
-import iroha_functions as irofun
-import iroha_config as irocon
+import iroha_functions
+import iroha_config
 if sys.version_info[0] < 3:
     raise Exception('Python 3 or a more recent version is required.')
 
@@ -13,14 +13,14 @@ if sys.version_info[0] < 3:
 # The admin node is in charge of do this, hence all transactions need to be signed by him
 # 1. You can create a domain with an asset
 # create_domain_and_asset(domain_id, default_role, asset_name, asset_precision)
-irofun.create_domain_and_asset(irocon.domain_vehicle, irocon.default_role, irocon.asset_vehicle, irocon.asset_precision)
+iroha_functions.create_domain_and_asset(iroha_config.domain_vehicle, iroha_config.default_role, iroha_config.asset_vehicle, iroha_config.asset_precision)
 
 # # 2. You can create a domain with no assets
-irofun.create_domain(irocon.domain_individual, irocon.default_role)
+iroha_functions.create_domain(iroha_config.domain_individual, iroha_config.default_role)
 #
 # # 3. You can add an asset to a domain already created. In 2 we have created the domain *individual*, no we can create
 # # an asset for individuals
-irofun.create_asset(irocon.domain_individual, irocon.asset_individual, irocon.asset_precision)
+iroha_functions.create_asset(iroha_config.domain_individual, iroha_config.asset_individual, iroha_config.asset_precision)
 
 
 ########################################################################################
@@ -38,7 +38,7 @@ node1_public_key = IrohaCrypto.derive_public_key(node1_private_key)
 
 # Admin node can create user accounts in a specific domain and add some assets to his account.
 # We will create a user in the individual domain
-irofun.create_account_with_assets(irocon.domain_individual, node1_name, node1_public_key, irocon.asset_individual,
+iroha_functions.create_account_with_assets(iroha_config.domain_individual, node1_name, node1_public_key, iroha_config.asset_individual,
                                   '1000')
 
 # Also is possible to create user accounts with no assets. But first define the name and the private and public keys
@@ -46,9 +46,9 @@ irofun.create_account_with_assets(irocon.domain_individual, node1_name, node1_pu
 node2_name = 'gol'
 node2_private_key = '0dee25b65cc30c2dea0ced919e6c613489de801de1544bba9c3d97fac18d7ec4'
 node2_public_key = IrohaCrypto.derive_public_key(node2_private_key)
-irofun.create_account(irocon.domain_vehicle, node2_name, node2_public_key)
+iroha_functions.create_account(iroha_config.domain_vehicle, node2_name, node2_public_key)
 # We can add some assets to the user
-irofun.create_assets_for_user(irocon.domain_vehicle, node2_name, irocon.asset_vehicle, '5000')
+iroha_functions.create_assets_for_user(iroha_config.domain_vehicle, node2_name, iroha_config.asset_vehicle, '5000')
 
 
 

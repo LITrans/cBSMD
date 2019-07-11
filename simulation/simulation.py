@@ -19,11 +19,6 @@ tax_users_data = tax_users.set_index('user_id')
 payment_users = pd.read_csv('user_private_keys_carbonpayments.csv')
 payment_users_data = payment_users.set_index('user_id')
 
-# Enter pool
-# 8 to 13: <20%
-# 13 to 18: <40%
-# 18 to 8(next day): <80%
-
 
 # pay carbon taxes for each trip
 def pay_carbon_tax_and_register_trip(user_identification, tokens_exp):
@@ -101,7 +96,6 @@ def buy_tokens(user_identification, tokens_exp):
                                                                               buy_token_government, 2)
 
 
-
 # decide when a node enters, exit o do not enter the pool
 def in_or_out_of_pool(user_identification, tokens_exp, second_current):
     # get current balance of the user
@@ -118,7 +112,7 @@ def in_or_out_of_pool(user_identification, tokens_exp, second_current):
         if 0 <= second_current < 18000:
             # print('morning pool')
             # user still has 80% of tokens to expend
-            if tokens_wallet - tokens_exp >= 0.8 * iroha_config.carbontax_init:
+            if tokens_wallet - tokens_exp >= 0.8 * iroha_config.CARBON_TAX_INIT:
                 # print('enter pool: ', user_id)
                 pool[user_identification] = user_identification
             else:
@@ -131,29 +125,35 @@ def in_or_out_of_pool(user_identification, tokens_exp, second_current):
         if 18000 <= second_current < 36000:
             # print('noon pool')
             # user still has 60% of tokens to expend
-            if tokens_wallet - tokens_exp >= 0.6 * iroha_config.carbontax_init:
+            if tokens_wallet - tokens_exp >= 0.6 * iroha_config.CARBON_TAX_INIT:
                 pool[user_identification] = user_identification
             else:
                 if user_identification in pool:
                     del pool[user_identification]
-        # evening pool from 18 to 8(next day)
-        if 36000 <= second_current < 86400:
+        # evening pool from 18 to 24
+        if 36000 <= second_current < 57600:
             # print('evening/next day pool')
             # user still has 20% of tokens to expend
-            if tokens_wallet - tokens_exp >= 0.2 * iroha_config.carbontax_init:
+            if tokens_wallet - tokens_exp >= 0.2 * iroha_config.CARBON_TAX_INIT:
                 pool[user_identification] = user_identification
             else:
                 if user_id in pool:
                     del pool[user_identification]
-        # print(len(pool))
+        # midnight pool from 24 to 8(next day)
+        if 57600 <= second_current < iroha_config.LENGTH:
+            # print('evening/next day pool')
+            # user still has 20% of tokens to expend
+            if tokens_wallet - tokens_exp >= 0.1 * iroha_config.CARBON_TAX_INIT:
+                pool[user_identification] = user_identification
+            else:
+                if user_id in pool:
+                    del pool[user_identification]
 
 
 # loop every second
 start_of_day = iroha_config.SIMULATION_STARTS_AT
 print('Simulation starts')
 start = time.time()
-
-
 for second in range(iroha_config.LENGTH):
     current_time_date = start_of_day + datetime.timedelta(0,second)
     current_time = current_time_date.time().strftime('%H:%M:%S')
@@ -183,16 +183,16 @@ for second in range(iroha_config.LENGTH):
                 pay_carbon_tax_and_register_trip(user_id, tokens_trip)
             else:
                 register_trip()
-
             # # get balance of users after all transactions
             # balance = tax_users_data.loc[user_id, : ]
             # tokens_total = balance['tokens_left']
             # tokens_bought_from_pool = balance['tokens_bought_from_pool']
             # tokens_bought_from_government = balance['tokens_bought_from_government']
             # tokens_sold = balance['tokens_sold']
-            # print(mode_prime, tokens_trip, tokens_total, tokens_bought_from_pool, tokens_bought_from_government, tokens_sold)
+            # print(mode_prime, tokens_trip, tokens_total, tokens_bought_from_pool, tokens_bought_from_government,
+            #       tokens_sold)
 
-tax_users_data.to_csv('results.csv', sep=',', encoding='utf-8')
+tax_users_data.to_csv('results (4 slot pool).csv', sep=',', encoding='utf-8')
 elapsed_time = time.time() - start
 print('Simulation ends in: ', elapsed_time / 60, ' minutes')
 

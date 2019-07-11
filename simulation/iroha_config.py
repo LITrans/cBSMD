@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-
+import datetime
 from iroha import Iroha, IrohaGrpc
 import sys
 if sys.version_info[0] < 3:
@@ -7,7 +7,6 @@ if sys.version_info[0] < 3:
 
 # BSMD configuration
 ######################
-
 # This parameters are for the admin of the BSMD
 # Replace localhost with an IP address of a node running the blockchain
 network = IrohaGrpc('localhost:50051')
@@ -44,7 +43,13 @@ asset_carbon_tax = 'carbontax'
 asset_carbon_payments = 'carboncoin'
 asset_precision = 2
 
+# EXPERIMENT configuration
+######################
+# Initial time of the simulation
+SIMULATION_STARTS_AT = datetime.datetime(2019, 9, 24, 8, 00, 00)
+# Length in seconds of the simulation
+LENGTH = 86400 # 24hrs
 # Initial amount of carbon tokes everyone start with
-carbontax_init = 493.79
+CARBON_TAX_INIT = 493.79
 # Initial amount of carbon coin everyone start with
-carboncoin_init = 0
+CARBON_COIN_INIT = 0

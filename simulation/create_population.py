@@ -33,10 +33,11 @@ for index, user in different_users.iterrows():
 # create a dictionary to get all users private keys and create users in the domain_carbon_tax
 with open('user_private_keys_carbontaxes.csv', mode='w') as user_private_key:
     private_key_writer = csv.writer(user_private_key, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
-    private_key_writer.writerow(["user_id", "private_key", "carbon_tax", "tokens_from_pool", "tokens_from_government"])
+    private_key_writer.writerow(["user_id", "private_key", "tokens_left", "tokens_bought_from_pool",
+                                 "tokens_bought_from_government", "tokens_sold"])
     for index, user in enumerate(users):
         user_private_key = IrohaCrypto.private_key()
-        private_key_writer.writerow([user, str(user_private_key), iroha_config.carbontax_init, 0.0, 0.0])
+        private_key_writer.writerow([user, str(user_private_key), iroha_config.CARBON_TAX_INIT, 0.0, 0.0, 0.0])
         user_name = user
         user_public_key = IrohaCrypto.derive_public_key(user_private_key)
         # iroha_functions.create_account_with_assets(iroha_config.domain_carbon_tax, user_name, user_public_key,
@@ -48,7 +49,7 @@ with open('user_private_keys_carbonpayments.csv', mode='w') as user_private_key:
     private_key_writer.writerow(["user_id", "private_key", "carbon_coins"])
     for index, user in enumerate(users):
         user_private_key = IrohaCrypto.private_key()
-        private_key_writer.writerow([user, str(user_private_key), iroha_config.carboncoin_init])
+        private_key_writer.writerow([user, str(user_private_key), iroha_config.CARBON_COIN_INIT])
         user_name = user
         user_public_key = IrohaCrypto.derive_public_key(user_private_key)
         # iroha_functions.create_account(iroha_config.domain_carbon_payments, user_name, user_public_key)

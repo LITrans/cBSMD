@@ -5,6 +5,8 @@ import time
 
 # users pool
 pool = {}
+# if a user make a trip and didn't make it to the pool is possible he can enter the pool in the next slot
+pool_eligible = {}
 
 # load all databases. First load the trip database
 trip = pd.read_csv("cBSMD_data.csv")
@@ -97,7 +99,7 @@ def buy_tokens(user_identification, tokens_exp):
 
 
 # decide when a node enters, exit o do not enter the pool
-def in_or_out_of_pool(user_identification, tokens_exp, second_current):
+def in_or_out_of_pool(user_identification, tokens_exp, current_second):
     # get current balance of the user
     tokens_wallet = tax_users_data.loc[user_identification, 'tokens_left']
 
@@ -109,45 +111,80 @@ def in_or_out_of_pool(user_identification, tokens_exp, second_current):
         # simulation starts at 8am
         # morning pool from 8 to 13
         # print(user_id, tokens_wallet - tokens_exp, second)
-        if 0 <= second_current < 18000:
+        if 0 <= current_second < 18000:
             # print('morning pool')
             # user still has 80% of tokens to expend
             if tokens_wallet - tokens_exp >= 0.8 * iroha_config.CARBON_TAX_INIT:
-                # print('enter pool: ', user_id)
                 pool[user_identification] = user_identification
             else:
+                # if in this slot the user didn't make it to the pool. He is eligible to enter in the next slot since
+                # the user already make a trip
+                pool_eligible[user_identification] = tokens_wallet - tokens_exp
                 if user_identification in pool:
                     # print('exit pool ', user_id)
                     del pool[user_identification]
-                # else:
-                    # print('dont_enter pool ', user_id)
+
         # noon pool from 13 to 18
-        if 18000 <= second_current < 36000:
+        if 18000 <= current_second < 36000:
             # print('noon pool')
             # user still has 60% of tokens to expend
             if tokens_wallet - tokens_exp >= 0.6 * iroha_config.CARBON_TAX_INIT:
                 pool[user_identification] = user_identification
             else:
+                # if in this slot the user didn't make it to the pool. He is eligible to enter in the next slot since
+                # the user already make a trip
+                pool_eligible[user_identification] = tokens_wallet - tokens_exp
                 if user_identification in pool:
                     del pool[user_identification]
-        # evening pool from 18 to 24
-        if 36000 <= second_current < 57600:
+
+        # evening pool from 18 to 8(next day)
+        if 36000 <= current_second < iroha_config.LENGTH:
             # print('evening/next day pool')
             # user still has 20% of tokens to expend
             if tokens_wallet - tokens_exp >= 0.2 * iroha_config.CARBON_TAX_INIT:
                 pool[user_identification] = user_identification
             else:
+                # if in this slot the user didn't make it to the pool. He is eligible to enter in the next slot since
+                # the user already make a trip
+                # pool_eligible[user_identification] = tokens_wallet - tokens_exp
                 if user_id in pool:
                     del pool[user_identification]
-        # midnight pool from 24 to 8(next day)
-        if 57600 <= second_current < iroha_config.LENGTH:
-            # print('evening/next day pool')
-            # user still has 20% of tokens to expend
-            if tokens_wallet - tokens_exp >= 0.1 * iroha_config.CARBON_TAX_INIT:
-                pool[user_identification] = user_identification
-            else:
-                if user_id in pool:
-                    del pool[user_identification]
+
+        # # midnight pool from 24 to 8(next day)
+        # if 57600 <= current_second < iroha_config.LENGTH:
+        #     # print('evening/next day pool')
+        #     # user still has 10% of tokens to expend
+        #     if tokens_wallet - tokens_exp >= 0.1 * iroha_config.CARBON_TAX_INIT:
+        #         pool[user_identification] = user_identification
+        #     else:
+        #         # the last slot does not need a pool_eligible
+        #         if user_id in pool:
+        #             del pool[user_identification]
+
+
+# select from the pool_eligible which nodes can enter the pool
+def update_pool(current_second):
+    # noon slot
+    if current_second == 18000:
+        for user_eligible in list(pool_eligible):
+            user_tokens_left = tax_users_data.at[user_eligible, 'tokens_left']
+            if user_tokens_left >= 0.6 * iroha_config.CARBON_TAX_INIT:
+                pool[user_eligible] = user_eligible
+                del pool_eligible[user_eligible]
+    # evening slot
+    if current_second == 36000:
+        for user_eligible in list(pool_eligible):
+            user_tokens_left = tax_users_data.at[user_eligible, 'tokens_left']
+            if user_tokens_left >= 0.2 * iroha_config.CARBON_TAX_INIT:
+                pool[user_eligible] = user_eligible
+                del pool_eligible[user_eligible]
+    # # midnight slot
+    # if current_second == 57600:
+    #     for user_eligible in list(pool_eligible):
+    #         user_tokens_left = tax_users_data.at[user_eligible, 'tokens_left']
+    #         if user_tokens_left >= 0.1 * iroha_config.CARBON_TAX_INIT:
+    #             pool[user_eligible] = user_eligible
+    #             del pool_eligible[user_eligible]
 
 
 # loop every second
@@ -155,8 +192,11 @@ start_of_day = iroha_config.SIMULATION_STARTS_AT
 print('Simulation starts')
 start = time.time()
 for second in range(iroha_config.LENGTH):
-    current_time_date = start_of_day + datetime.timedelta(0,second)
+    current_time_date = start_of_day + datetime.timedelta(0, second)
     current_time = current_time_date.time().strftime('%H:%M:%S')
+
+    # every new slot we look in the pool eligible the user that could enter
+    update_pool(second)
 
     # get rows in panda for current time
     trips = trip_data.loc[trip_data['end_time'] == str(current_time)]
@@ -192,7 +232,7 @@ for second in range(iroha_config.LENGTH):
             # print(mode_prime, tokens_trip, tokens_total, tokens_bought_from_pool, tokens_bought_from_government,
             #       tokens_sold)
 
-tax_users_data.to_csv('results (4 slot pool).csv', sep=',', encoding='utf-8')
+tax_users_data.to_csv('results (3 slot pool).csv', sep=',', encoding='utf-8')
 elapsed_time = time.time() - start
-print('Simulation ends in: ', elapsed_time / 60, ' minutes')
+print('Simulation ends in: ', round(elapsed_time / 60, 2), ' minutes')
 

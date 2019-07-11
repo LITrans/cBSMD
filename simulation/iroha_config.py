@@ -53,3 +53,4 @@ LENGTH = 86400 # 24hrs
 CARBON_TAX_INIT = 493.79
 # Initial amount of carbon coin everyone start with
 CARBON_COIN_INIT = 0
+

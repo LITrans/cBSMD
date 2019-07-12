@@ -1,4 +1,5 @@
 import pandas as pd
+# import modin.pandas as pd
 import datetime
 import iroha_config
 import time
@@ -19,15 +20,17 @@ trip_data['end_time'] = trip_data['end_time'].astype(str)
 tax_users = pd.read_csv('user_private_keys_carbontaxes.csv')
 tax_users_data = tax_users.set_index('user_id')
 # load the keys for users in domain carbonpayments
-payment_users = pd.read_csv('user_private_keys_carbonpayments.csv')
-payment_users_data = payment_users.set_index('user_id')
-
+# payment_users = pd.read_csv('user_private_keys_carbonpayments.csv')
+# payment_users_data = payment_users.set_index('user_id')
 
 
 # pay carbon taxes for each trip
 def pay_carbon_tax_and_register_trip(user_identification, tokens_exp):
-    tokens_wallet = tax_users_data.loc[user_identification, 'tokens_left']
+    user_balance = tax_users_data.loc[user_identification, :]
+    tokens_wallet = user_balance['tokens_left']
+    tokens_pay = user_balance['tokens_pay_for_trips']
     tax_users_data.at[user_identification, 'tokens_left'] = round(tokens_wallet - tokens_exp, 2)
+    tax_users_data.at[user_identification, 'tokens_pay_for_trips'] = round(tokens_pay + tokens_exp, 2)
 
 
 # register trip no payment need it
@@ -93,9 +96,8 @@ def buy_tokens(user_identification, tokens_exp):
                         del pool[swimmer]
                     # count token transactions
                     pool_transactions = pool_transactions + 1
-
                 # Users with not enough tokens will share as much as they can
-                if token_swimmer - token_each_user < 0:
+                else:
                     as_much_tokens = token_swimmer
                     # remove the tokes from the swimmer wallet
                     tax_users_data.at[swimmer, 'tokens_left'] = round(token_swimmer - as_much_tokens, 2)
@@ -110,6 +112,7 @@ def buy_tokens(user_identification, tokens_exp):
                     tokens_sell = tokens_sell + as_much_tokens
                     # count token transactions
                     pool_transactions = pool_transactions + 1
+                    del pool[swimmer]
 
             # if the user does not collect enough tokens from the pool he will have to buy
             # the remaining tokens from the government
@@ -267,18 +270,18 @@ for second in range(iroha_config.LENGTH):
                 trip_tx_sec = trip_tx_sec + 1
             else:
                 register_trip()
-
-    simulation_statistics = simulation_statistics.append({'time': current_time,
-                                                          'users in pool' : len(pool),
-                                                          'users in eligible pool': len(pool_eligible),
-                                                          'tokens pool tx': pool_tx_sec,
-                                                          'tokens government tx': gov_tx_sec,
-                                                          'tokens trip tx': trip_tx_sec,
-                                                          'trip tx': len(trips),
-                                                          'total tx': pool_tx_sec + gov_tx_sec + trip_tx_sec +
-                                                                      len(trips)
-                                                          },
-                                                         ignore_index=True)
+    if len(trips) != 0:
+        simulation_statistics = simulation_statistics.append({'time': current_time,
+                                                              'users in pool' : len(pool),
+                                                              'users in eligible pool': len(pool_eligible),
+                                                              'tokens pool tx': pool_tx_sec,
+                                                              'tokens government tx': gov_tx_sec,
+                                                              'tokens trip tx': trip_tx_sec,
+                                                              'trip tx': len(trips),
+                                                              'total tx': pool_tx_sec + gov_tx_sec + trip_tx_sec +
+                                                                          len(trips)
+                                                              },
+                                                             ignore_index=True)
 
 # save econometric of the simulation
 tax_users_data.to_csv('economics.csv', sep=',', encoding='utf-8')

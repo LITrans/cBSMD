@@ -2,6 +2,7 @@ import pandas as pd
 import datetime
 import iroha_config
 import time
+import csv
 
 # users pool
 pool = {}
@@ -22,6 +23,7 @@ payment_users = pd.read_csv('user_private_keys_carbonpayments.csv')
 payment_users_data = payment_users.set_index('user_id')
 
 
+
 # pay carbon taxes for each trip
 def pay_carbon_tax_and_register_trip(user_identification, tokens_exp):
     tokens_wallet = tax_users_data.loc[user_identification, 'tokens_left']
@@ -38,6 +40,10 @@ def buy_tokens(user_identification, tokens_exp):
     # get current balance of users
     user_balance = tax_users_data.loc[user_identification, :]
     tokens_wallet_user = user_balance['tokens_left']
+    # counter to get the number of pool token transactions
+    pool_transactions = 0
+    # counter to get the number of government token transactions
+    government_transactions = 0
 
     users_in_pool = len(pool)
 
@@ -53,7 +59,7 @@ def buy_tokens(user_identification, tokens_exp):
             tax_users_data.at[user_identification, 'tokens_bought_from_government'] = round(tokens_government_user +
                                                                                             tokens_buy, 2)
             tax_users_data.at[user_identification, 'tokens_left'] = round(tokens_wallet_user + tokens_buy, 2)
-            # print('taken from government: ', users_in_pool, tokens_to_buy)
+            government_transactions = government_transactions + 1
         else:
             # tokens taken from the each user in the pool
             token_each_user = round(tokens_buy / users_in_pool, 2)
@@ -69,21 +75,41 @@ def buy_tokens(user_identification, tokens_exp):
                 current_tokens_wallet_user = current_user_balance['tokens_left']
                 current_tokens_pool_user = current_user_balance['tokens_bought_from_pool']
 
-                # if the user do not have enoguh tokens the he exit the pool
-                if token_swimmer - token_each_user <= 0:
-                    del pool[swimmer]
-                else:
+                # Users with enough tokens will share all his corresponding part
+                if token_swimmer - token_each_user >= 0:
                     # remove the tokes from the swimmer wallet
                     tax_users_data.at[swimmer, 'tokens_left'] = round(token_swimmer - token_each_user, 2)
                     # add the tokes to the other swimmer wallet where he can save money for buying stuff
                     tax_users_data.at[swimmer, 'tokens_sold'] = round(token_swimmer_sold + token_each_user, 2)
-                    # add the tokens the swimmer earns by the transaction
-
+                    # add the tokens to the user wallet
                     tax_users_data.at[user_identification, 'tokens_left'] = round(current_tokens_wallet_user +
                                                                                   token_each_user, 2)
+                    # count the tokens the user bought from the pool
                     tax_users_data.at[user_identification, 'tokens_bought_from_pool'] = round(current_tokens_pool_user +
                                                                                               token_each_user, 2)
                     tokens_sell = tokens_sell + token_each_user
+                    # if the swimmer ran out out tokens in this transaction, he exits the pool
+                    if round(token_swimmer - token_each_user, 2) == 0:
+                        del pool[swimmer]
+                    # count token transactions
+                    pool_transactions = pool_transactions + 1
+
+                # Users with not enough tokens will share as much as they can
+                if token_swimmer - token_each_user < 0:
+                    as_much_tokens = token_swimmer
+                    # remove the tokes from the swimmer wallet
+                    tax_users_data.at[swimmer, 'tokens_left'] = round(token_swimmer - as_much_tokens, 2)
+                    # add the tokes to the other swimmer wallet where he can save money for buying stuff
+                    tax_users_data.at[swimmer, 'tokens_sold'] = round(token_swimmer_sold + as_much_tokens, 2)
+                    # add the tokens to the user wallet
+                    tax_users_data.at[user_identification, 'tokens_left'] = round(current_tokens_wallet_user +
+                                                                                  as_much_tokens, 2)
+                    # count the tokens the user bought from the pool
+                    tax_users_data.at[user_identification, 'tokens_bought_from_pool'] = round(current_tokens_pool_user +
+                                                                                              as_much_tokens, 2)
+                    tokens_sell = tokens_sell + as_much_tokens
+                    # count token transactions
+                    pool_transactions = pool_transactions + 1
 
             # if the user does not collect enough tokens from the pool he will have to buy
             # the remaining tokens from the government
@@ -96,6 +122,9 @@ def buy_tokens(user_identification, tokens_exp):
                     round(current_tokens_government_user + buy_token_government, 2)
                 tax_users_data.at[user_identification, 'tokens_left'] = round(current_tokens_wallet_user +
                                                                               buy_token_government, 2)
+                government_transactions = government_transactions + 1
+
+    return pool_transactions, government_transactions
 
 
 # decide when a node enters, exit o do not enter the pool
@@ -119,7 +148,7 @@ def in_or_out_of_pool(user_identification, tokens_exp, current_second):
             else:
                 # if in this slot the user didn't make it to the pool. He is eligible to enter in the next slot since
                 # the user already make a trip
-                pool_eligible[user_identification] = tokens_wallet - tokens_exp
+                pool_eligible[user_identification] = user_identification
                 if user_identification in pool:
                     # print('exit pool ', user_id)
                     del pool[user_identification]
@@ -133,12 +162,12 @@ def in_or_out_of_pool(user_identification, tokens_exp, current_second):
             else:
                 # if in this slot the user didn't make it to the pool. He is eligible to enter in the next slot since
                 # the user already make a trip
-                pool_eligible[user_identification] = tokens_wallet - tokens_exp
+                pool_eligible[user_identification] = user_identification
                 if user_identification in pool:
                     del pool[user_identification]
 
         # evening pool from 18 to 8(next day)
-        if 36000 <= current_second < iroha_config.LENGTH:
+        if 36000 <= current_second < 57600:
             # print('evening/next day pool')
             # user still has 20% of tokens to expend
             if tokens_wallet - tokens_exp >= 0.2 * iroha_config.CARBON_TAX_INIT:
@@ -146,20 +175,20 @@ def in_or_out_of_pool(user_identification, tokens_exp, current_second):
             else:
                 # if in this slot the user didn't make it to the pool. He is eligible to enter in the next slot since
                 # the user already make a trip
-                # pool_eligible[user_identification] = tokens_wallet - tokens_exp
+                pool_eligible[user_identification] = user_identification
                 if user_id in pool:
                     del pool[user_identification]
 
-        # # midnight pool from 24 to 8(next day)
-        # if 57600 <= current_second < iroha_config.LENGTH:
-        #     # print('evening/next day pool')
-        #     # user still has 10% of tokens to expend
-        #     if tokens_wallet - tokens_exp >= 0.1 * iroha_config.CARBON_TAX_INIT:
-        #         pool[user_identification] = user_identification
-        #     else:
-        #         # the last slot does not need a pool_eligible
-        #         if user_id in pool:
-        #             del pool[user_identification]
+        # midnight pool from 24 to 8(next day)
+        if 57600 <= current_second < iroha_config.LENGTH:
+            # print('evening/next day pool')
+            # user still has 10% of tokens to expend
+            if tokens_wallet - tokens_exp >= 0.1 * iroha_config.CARBON_TAX_INIT:
+                pool[user_identification] = user_identification
+            else:
+                # the last slot does not need a pool_eligible
+                if user_id in pool:
+                    del pool[user_identification]
 
 
 # select from the pool_eligible which nodes can enter the pool
@@ -178,25 +207,37 @@ def update_pool(current_second):
             if user_tokens_left >= 0.2 * iroha_config.CARBON_TAX_INIT:
                 pool[user_eligible] = user_eligible
                 del pool_eligible[user_eligible]
-    # # midnight slot
-    # if current_second == 57600:
-    #     for user_eligible in list(pool_eligible):
-    #         user_tokens_left = tax_users_data.at[user_eligible, 'tokens_left']
-    #         if user_tokens_left >= 0.1 * iroha_config.CARBON_TAX_INIT:
-    #             pool[user_eligible] = user_eligible
-    #             del pool_eligible[user_eligible]
+    # midnight slot
+    if current_second == 57600:
+        for user_eligible in list(pool_eligible):
+            user_tokens_left = tax_users_data.at[user_eligible, 'tokens_left']
+            if user_tokens_left >= 0.1 * iroha_config.CARBON_TAX_INIT:
+                pool[user_eligible] = user_eligible
+                del pool_eligible[user_eligible]
 
 
 # loop every second
+simulation_statistics = pd.DataFrame(columns=['time', 'users in pool', 'users in eligible pool', 'tokens pool tx',
+                                              'tokens government tx', 'tokens trip tx', 'trip tx', 'total tx'])
 start_of_day = iroha_config.SIMULATION_STARTS_AT
 print('Simulation starts')
 start = time.time()
 for second in range(iroha_config.LENGTH):
     current_time_date = start_of_day + datetime.timedelta(0, second)
     current_time = current_time_date.time().strftime('%H:%M:%S')
+    if second % 3600 == 0:
+        elapsed_time = time.time() - start
+        print(current_time, "Elapsed time:", round(elapsed_time / 60, 2), 'minutes')
 
-    # every new slot we look in the pool eligible the user that could enter
+    # every new slot we look in the eligible pool for users that could enter
     update_pool(second)
+
+    # counter of pool token transactions per second
+    pool_tx_sec = 0
+    # counter of government token transactions per second
+    gov_tx_sec = 0
+    # counter of trip token transactions per second
+    trip_tx_sec = 0
 
     # get rows in panda for current time
     trips = trip_data.loc[trip_data['end_time'] == str(current_time)]
@@ -216,23 +257,33 @@ for second in range(iroha_config.LENGTH):
             in_or_out_of_pool(user_id, tokens_trip, second)
 
             # buy tokens only if need it
-            buy_tokens(user_id, tokens_trip)
+            pool_tx, government_tx = buy_tokens(user_id, tokens_trip)
+            pool_tx_sec = pool_tx_sec + pool_tx
+            gov_tx_sec = gov_tx_sec + government_tx
 
             # pay trip, i.e., remove coins from carbontaxes
             if tokens_trip != 0:
                 pay_carbon_tax_and_register_trip(user_id, tokens_trip)
+                trip_tx_sec = trip_tx_sec + 1
             else:
                 register_trip()
-            # # get balance of users after all transactions
-            # balance = tax_users_data.loc[user_id, : ]
-            # tokens_total = balance['tokens_left']
-            # tokens_bought_from_pool = balance['tokens_bought_from_pool']
-            # tokens_bought_from_government = balance['tokens_bought_from_government']
-            # tokens_sold = balance['tokens_sold']
-            # print(mode_prime, tokens_trip, tokens_total, tokens_bought_from_pool, tokens_bought_from_government,
-            #       tokens_sold)
 
-tax_users_data.to_csv('results (3 slot pool).csv', sep=',', encoding='utf-8')
+    simulation_statistics = simulation_statistics.append({'time': current_time,
+                                                          'users in pool' : len(pool),
+                                                          'users in eligible pool': len(pool_eligible),
+                                                          'tokens pool tx': pool_tx_sec,
+                                                          'tokens government tx': gov_tx_sec,
+                                                          'tokens trip tx': trip_tx_sec,
+                                                          'trip tx': len(trips),
+                                                          'total tx': pool_tx_sec + gov_tx_sec + trip_tx_sec +
+                                                                      len(trips)
+                                                          },
+                                                         ignore_index=True)
+
+# save econometric of the simulation
+tax_users_data.to_csv('economics.csv', sep=',', encoding='utf-8')
+# save statistics of the simulation
+simulation_statistics.to_csv('statistics.csv', sep=',', encoding='utf-8')
 elapsed_time = time.time() - start
 print('Simulation ends in: ', round(elapsed_time / 60, 2), ' minutes')
 

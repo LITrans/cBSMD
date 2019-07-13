@@ -33,6 +33,7 @@ with open('user_carbon_taxes.csv', mode='w') as user_carbon_tax:
 tax_users = pd.read_csv('user_carbon_taxes.csv')
 tax_users_data = tax_users.set_index('user_id')
 
+
 # pay carbon taxes for each trip
 def pay_carbon_tax_and_register_trip(user_identification, tokens_exp):
     user_balance = tax_users_data.loc[user_identification, :]

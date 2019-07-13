@@ -15,11 +15,11 @@ pool_eligible = {}
 trip_data = pd.read_csv("cBSMD_data.csv")
 # convert time to string for easy management
 trip_data['end_time'] = trip_data['end_time'].astype(str)
-# load the keys for users in domain carbontaxes
-tax_users = pd.read_csv('user_private_keys_carbontaxes.csv')
+# load the keys for users in domain carbon taxes
+tax_users = pd.read_csv('user_private_keys_carbon_taxes.csv')
 tax_users_data = tax_users.set_index('user_id')
-# load the keys for users in domain carbonpayments
-payment_users = pd.read_csv('user_private_keys_carbonpayments.csv')
+# load the keys for users in domain carbon payments
+payment_users = pd.read_csv('user_private_keys_carbon_payments.csv')
 payment_users_data = payment_users.set_index('user_id')
 
 
@@ -32,8 +32,8 @@ def pay_carbon_tax_and_register_trip(user_identification, trip_user):
     m_prime = trip_user['mode_prime']
     t_trip = trip_user['tokens']
 
-    iroha_functions.transfer_assets(iroha_config.domain_carbon_tax, user_identification, user_pk, 'government',
-                                    iroha_config.asset_carbon_tax, t_trip)
+    iroha_functions.transfer_assets(iroha_config.DOMAIN_CARBON_TAX, user_identification, user_pk, 'government',
+                                    iroha_config.ASSET_CARBON_TAX, t_trip)
 
     transaction_data = dict()
     transaction_data['start'] = s_time
@@ -45,7 +45,7 @@ def pay_carbon_tax_and_register_trip(user_identification, trip_user):
     j = json.dumps(transaction_data)
     j_in_ledger = str(j)
     json_trip = j_in_ledger.replace('"', '')
-    iroha_functions.set_detail(iroha_config.domain_carbon_tax, user_identification, user_pk, t_id, json_trip)
+    iroha_functions.set_detail(iroha_config.DOMAIN_CARBON_TAX, user_identification, user_pk, t_id, json_trip)
 
 
 # register trip no payment need it
@@ -67,19 +67,14 @@ def register_trip(user_identification, trip_user):
     j = json.dumps(transaction_data)
     j_in_ledger = str(j)
     json_trip = j_in_ledger.replace('"', '')
-    iroha_functions.set_detail(iroha_config.domain_carbon_tax, user_identification, user_pk, t_id, json_trip)
+    iroha_functions.set_detail(iroha_config.DOMAIN_CARBON_TAX, user_identification, user_pk, t_id, json_trip)
 
 
 # buy tokes from pool or government
 def buy_tokens(user_identification, tokens_exp):
     # get current balance of users
     user_pk = tax_users_data.loc[user_identification, 'private_key']
-    tokens_wallet_user = iroha_functions.get_balance(iroha_config.domain_carbon_tax, user_identification, user_pk)
-
-    # counter to get the number of pool token transactions
-    pool_transactions = 0
-    # counter to get the number of government token transactions
-    government_transactions = 0
+    tokens_wallet_user = iroha_functions.get_balance(iroha_config.DOMAIN_CARBON_TAX, user_identification, user_pk)
 
     users_in_pool = len(pool)
 
@@ -93,26 +88,26 @@ def buy_tokens(user_identification, tokens_exp):
         if len(pool) == 0:
             # user buy tokens from government. First user send coins to government
             user_pk_payments = payment_users_data.loc[user_identification, 'private_key']
-            iroha_functions.transfer_assets(iroha_config.domain_carbon_payments, user_identification, user_pk_payments,
+            iroha_functions.transfer_assets(iroha_config.DOMAIN_CARBON_PAYMENTS, user_identification, user_pk_payments,
                                             'government', tokens_buy, 'coins for tokens')
             # then the user receive tokens from government
-            iroha_functions.transfer_assets(iroha_config.domain_carbon_tax, 'government', iroha_config.government_pk,
-                                            user_identification, iroha_config.asset_carbon_tax, tokens_buy,
+            iroha_functions.transfer_assets(iroha_config.DOMAIN_CARBON_TAX, 'government', iroha_config.GOVERNMENT_PK_TAX,
+                                            user_identification, iroha_config.ASSET_CARBON_TAX, tokens_buy,
                                             'tokens for coins')
         else:
             # tokens taken from the each user in the pool
             token_each_user = round(tokens_buy / users_in_pool, 2)
-            # print('taken from each user of pool: ', users_in_pool, token_from_each_user, tokens_to_buy)
+            tokens_sell = 0
             for swimmer in list(pool):
                 # get the balance from each swimmer
-                swimmer_pk = tax_users_data.loc[swimmer_pk, 'private_key']
-                token_swimmer = iroha_functions.get_balance(iroha_config.domain_carbon_tax, swimmer, swimmer_pk)
+                swimmer_pk = tax_users_data.loc[swimmer, 'private_key']
+                token_swimmer = iroha_functions.get_balance(iroha_config.DOMAIN_CARBON_TAX, swimmer, swimmer_pk)
 
                 # Users with enough tokens will share all his corresponding part
                 if token_swimmer - token_each_user >= 0:
                     # swimmer send tokens to user
-                    iroha_functions.transfer_assets(iroha_config.domain_carbon_tax, swimmer, swimmer_pk,
-                                                    user_identification, iroha_config.asset_carbon_tax, token_each_user,
+                    iroha_functions.transfer_assets(iroha_config.DOMAIN_CARBON_TAX, swimmer, swimmer_pk,
+                                                    user_identification, iroha_config.ASSET_CARBON_TAX, token_each_user,
                                                     'token from pool')
                     tokens_sell = tokens_sell + token_each_user
                     # if swimmer ran out of tokens he exits the pool
@@ -120,8 +115,8 @@ def buy_tokens(user_identification, tokens_exp):
                         del pool[swimmer]
                 # Users with not enough tokens will share as much as they can
                 else:
-                    iroha_functions.transfer_assets(iroha_config.domain_carbon_tax, swimmer, swimmer_pk,
-                                                    user_identification, iroha_config.asset_carbon_tax, token_swimmer,
+                    iroha_functions.transfer_assets(iroha_config.DOMAIN_CARBON_TAX, swimmer, swimmer_pk,
+                                                    user_identification, iroha_config.ASSET_CARBON_TAX, token_swimmer,
                                                     'token from pool')
                     tokens_sell = tokens_sell + token_swimmer
                     # swimmer ran out of tokes so he exit the pool
@@ -133,20 +128,20 @@ def buy_tokens(user_identification, tokens_exp):
                 buy_token_government = abs(tokens_sell - tokens_buy)
                 # user buy tokens from government. First user send coins to government
                 user_pk_payments = payment_users_data.loc[user_identification, 'private_key']
-                iroha_functions.transfer_assets(iroha_config.domain_carbon_payments, user_identification,
+                iroha_functions.transfer_assets(iroha_config.DOMAIN_CARBON_PAYMENTS, user_identification,
                                                 user_pk_payments, 'government', buy_token_government,
                                                 'coins for tokens')
                 # then the user receive tokens from government
-                iroha_functions.transfer_assets(iroha_config.domain_carbon_tax, 'government',
-                                                iroha_config.government_pk, user_identification,
-                                                iroha_config.asset_carbon_tax, buy_token_government, 'tokens for coins')
+                iroha_functions.transfer_assets(iroha_config.DOMAIN_CARBON_TAX, 'government',
+                                                iroha_config.GOVERNMENT_PK_TAX, user_identification,
+                                                iroha_config.ASSET_CARBON_TAX, buy_token_government, 'tokens for coins')
 
 
 # decide when a node enters, exit o do not enter the pool
 def in_or_out_of_pool(user_identification, tokens_exp, current_second):
     # get current balance of the user
     user_pk = tax_users_data.loc[user_identification, 'private_key']
-    tokens_wallet = iroha_functions.get_balance(iroha_config.domain_carbon_tax, user_identification, user_pk)
+    tokens_wallet = iroha_functions.get_balance(iroha_config.DOMAIN_CARBON_TAX, user_identification, user_pk)
 
     # Exit pool if tokens_wallet - tokens_exp is negative
     if tokens_wallet - tokens_exp < 0:
@@ -213,7 +208,7 @@ def update_pool(current_second):
     if current_second == 18000:
         for user_eligible in list(pool_eligible):
             user_pk = tax_users_data.loc[user_eligible, 'private_key']
-            user_tokens_left = iroha_functions.get_balance(iroha_config.domain_carbon_tax, user_eligible, user_pk)
+            user_tokens_left = iroha_functions.get_balance(iroha_config.DOMAIN_CARBON_TAX, user_eligible, user_pk)
             if user_tokens_left >= 0.6 * iroha_config.CARBON_TAX_INIT:
                 pool[user_eligible] = user_eligible
                 del pool_eligible[user_eligible]
@@ -221,7 +216,7 @@ def update_pool(current_second):
     if current_second == 36000:
         for user_eligible in list(pool_eligible):
             user_pk = tax_users_data.loc[user_eligible, 'private_key']
-            user_tokens_left = iroha_functions.get_balance(iroha_config.domain_carbon_tax, user_eligible, user_pk)
+            user_tokens_left = iroha_functions.get_balance(iroha_config.DOMAIN_CARBON_TAX, user_eligible, user_pk)
             if user_tokens_left >= 0.2 * iroha_config.CARBON_TAX_INIT:
                 pool[user_eligible] = user_eligible
                 del pool_eligible[user_eligible]
@@ -229,7 +224,7 @@ def update_pool(current_second):
     if current_second == 57600:
         for user_eligible in list(pool_eligible):
             user_pk = tax_users_data.loc[user_eligible, 'private_key']
-            user_tokens_left = iroha_functions.get_balance(iroha_config.domain_carbon_tax, user_eligible, user_pk)
+            user_tokens_left = iroha_functions.get_balance(iroha_config.DOMAIN_CARBON_TAX, user_eligible, user_pk)
             if user_tokens_left >= 0.1 * iroha_config.CARBON_TAX_INIT:
                 pool[user_eligible] = user_eligible
                 del pool_eligible[user_eligible]
@@ -271,8 +266,7 @@ for second in range(iroha_config.LENGTH):
 
             # pay trip, i.e., remove coins from carbontaxes
             if tokens_trip != 0:
-                pay_carbon_tax_and_register_trip(user_id, tokens_trip, trip)
-                trip_tx_sec = trip_tx_sec + 1
+                pay_carbon_tax_and_register_trip(user_id, trip)
             else:
                 register_trip(user_id, trip)
 

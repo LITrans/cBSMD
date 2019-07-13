@@ -34,8 +34,8 @@ def send_transaction_and_print_status(transaction):
     hex_hash = binascii.hexlify(IrohaCrypto.hash(transaction))
     print('Transaction hash = {}, creator = {}'.format(
         hex_hash, transaction.payload.reduced_payload.creator_account_id))
-    iroha_config.network.send_tx(transaction)
-    for status in iroha_config.network.tx_status_stream(transaction):
+    iroha_config.NETWORK.send_tx(transaction)
+    for status in iroha_config.NETWORK.tx_status_stream(transaction):
         print(status)
 
 
@@ -50,15 +50,15 @@ def create_domain_and_asset(domain, default_role, asset_name, asset_precision):
     :return: null
     """
     print(domain, default_role, asset_name, asset_precision)
-    commands = [iroha_config.iroha_admin.command('CreateDomain',
+    commands = [iroha_config.IROHA_ADMIN.command('CreateDomain',
                                                  domain_id=domain,
                                                  default_role=default_role),
-                iroha_config.iroha_admin.command('CreateAsset',
+                iroha_config.IROHA_ADMIN.command('CreateAsset',
                                                  asset_name=asset_name,
                                                  domain_id=domain,
                                                  precision=asset_precision)]
 
-    tx = IrohaCrypto.sign_transaction(iroha_config.iroha_admin.transaction(commands), iroha_config.admin_private_key)
+    tx = IrohaCrypto.sign_transaction(iroha_config.IROHA_ADMIN.transaction(commands), iroha_config.ADMIN_PRIVATE_KEY)
     send_transaction_and_print_status(tx)
 
 
@@ -71,12 +71,12 @@ def create_domain(domain, default_role):
     :return:
     """
     print(domain, default_role)
-    tx = iroha_config.iroha_admin.transaction(
-        [iroha_config.iroha_admin.command('CreateDomain',
+    tx = iroha_config.IROHA_ADMIN.transaction(
+        [iroha_config.IROHA_ADMIN.command('CreateDomain',
                                           domain_id=domain,
                                           default_role=default_role)])
 
-    IrohaCrypto.sign_transaction(tx, iroha_config.admin_private_key)
+    IrohaCrypto.sign_transaction(tx, iroha_config.ADMIN_PRIVATE_KEY)
     send_transaction_and_print_status(tx)
 
 @trace
@@ -88,12 +88,12 @@ def create_asset(domain, asset_name, asset_precision):
     :param asset_precision: number of decimals accepted in the asset
     :return:
     """
-    tx = iroha_config.iroha_admin.transaction(
-        [iroha_config.iroha_admin.command('CreateAsset',
+    tx = iroha_config.IROHA_ADMIN.transaction(
+        [iroha_config.IROHA_ADMIN.command('CreateAsset',
                                           asset_name=asset_name,
                                           domain_id=domain,
                                           precision=asset_precision)])
-    IrohaCrypto.sign_transaction(tx, iroha_config.admin_private_key)
+    IrohaCrypto.sign_transaction(tx, iroha_config.ADMIN_PRIVATE_KEY)
     send_transaction_and_print_status(tx)
 
 @trace
@@ -116,31 +116,31 @@ def create_account_with_assets(domain, name, public_key, asset_name, asset_qty):
     """
     asset_id = asset_name + '#' + domain
     # 1. Create account
-    tx = iroha_config.iroha_admin.transaction(
-        [iroha_config.iroha_admin.command('CreateAccount',
+    tx = iroha_config.IROHA_ADMIN.transaction(
+        [iroha_config.IROHA_ADMIN.command('CreateAccount',
                        account_name=name,
                        domain_id=domain,
                        public_key=public_key)])
-    IrohaCrypto.sign_transaction(tx, iroha_config.admin_private_key)
+    IrohaCrypto.sign_transaction(tx, iroha_config.ADMIN_PRIVATE_KEY)
     send_transaction_and_print_status(tx)
 
     # 2. Create credit for the user
-    tx = iroha_config.iroha_admin.transaction([iroha_config.iroha_admin.command('AddAssetQuantity',
+    tx = iroha_config.IROHA_ADMIN.transaction([iroha_config.IROHA_ADMIN.command('AddAssetQuantity',
                                           asset_id=asset_id,
                                           amount=asset_qty)])
-    IrohaCrypto.sign_transaction(tx, iroha_config.admin_private_key)
+    IrohaCrypto.sign_transaction(tx, iroha_config.ADMIN_PRIVATE_KEY)
     send_transaction_and_print_status(tx)
 
     # 3. Transfer credit to the user
     dest_account_id = name + '@' + domain
-    tx = iroha_config.iroha_admin.transaction([
-        iroha_config.iroha_admin.command('TransferAsset',
+    tx = iroha_config.IROHA_ADMIN.transaction([
+        iroha_config.IROHA_ADMIN.command('TransferAsset',
                       src_account_id='admin@test',
                       dest_account_id=dest_account_id,
                       asset_id=asset_id,
                       description='initial credit',
                       amount=asset_qty)])
-    IrohaCrypto.sign_transaction(tx, iroha_config.admin_private_key)
+    IrohaCrypto.sign_transaction(tx, iroha_config.ADMIN_PRIVATE_KEY)
     send_transaction_and_print_status(tx)
 
 @trace
@@ -158,21 +158,21 @@ def create_assets_for_user(domain, name, asset_name, asset_qty):
     :return: null:
     """
     asset_id = asset_name + '#' + domain
-    tx = iroha_config.iroha_admin.transaction([iroha_config.iroha_admin.command('AddAssetQuantity',
+    tx = iroha_config.IROHA_ADMIN.transaction([iroha_config.IROHA_ADMIN.command('AddAssetQuantity',
                                           asset_id=asset_id,
                                           amount=asset_qty)])
-    IrohaCrypto.sign_transaction(tx, iroha_config.admin_private_key)
+    IrohaCrypto.sign_transaction(tx, iroha_config.ADMIN_PRIVATE_KEY)
     send_transaction_and_print_status(tx)
 
     dest_account_id = name + '@' + domain
-    tx = iroha_config.iroha_admin.transaction([
-        iroha_config.iroha_admin.command('TransferAsset',
+    tx = iroha_config.IROHA_ADMIN.transaction([
+        iroha_config.IROHA_ADMIN.command('TransferAsset',
                       src_account_id='admin@test',
                       dest_account_id=dest_account_id,
                       asset_id=asset_id,
                       description='asset created for node',
                       amount=asset_qty)])
-    IrohaCrypto.sign_transaction(tx, iroha_config.admin_private_key)
+    IrohaCrypto.sign_transaction(tx, iroha_config.ADMIN_PRIVATE_KEY)
     send_transaction_and_print_status(tx)
 
 
@@ -186,12 +186,12 @@ def create_account(domain, name, public_key):
     :return: null:
     """
     # 1. Create account
-    tx = iroha_config.iroha_admin.transaction(
-        [iroha_config.iroha_admin.command('CreateAccount',
+    tx = iroha_config.IROHA_ADMIN.transaction(
+        [iroha_config.IROHA_ADMIN.command('CreateAccount',
                        account_name=name,
                        domain_id=domain,
                        public_key=public_key)])
-    IrohaCrypto.sign_transaction(tx, iroha_config.admin_private_key)
+    IrohaCrypto.sign_transaction(tx, iroha_config.ADMIN_PRIVATE_KEY)
     send_transaction_and_print_status(tx)
 
 
@@ -216,7 +216,7 @@ def get_balance(domain, name, private_key):
                         account_id=account_id)
     IrohaCrypto.sign_query(query, private_key)
 
-    response = iroha_config.network.send_query(query)
+    response = iroha_config.NETWORK.send_query(query)
     data = response.account_assets_response.account_assets
     for asset in data:
         print('Asset id = {}, balance = {}'.format(asset.asset_id, asset.balance))
@@ -366,7 +366,7 @@ def get_detail_from_generator(domain, name, private_key, generator_domain, gener
                         key=detail_id)
     IrohaCrypto.sign_query(query, private_key)
 
-    response = iroha_config.network.send_query(query)
+    response = iroha_config.NETWORK.send_query(query)
     data = response.account_detail_response
     print('Account id = {}, details = {}'.format(account_id, data.detail))
     return data.detail
@@ -402,7 +402,7 @@ def get_all_details_from_generator(domain, name, private_key, generator_domain, 
                         writer=generator_id)
     IrohaCrypto.sign_query(query, private_key)
 
-    response = iroha_config.network.send_query(query)
+    response = iroha_config.NETWORK.send_query(query)
     data = response.account_detail_response
     print('Account id = {}, details = {}'.format(account_id, data.detail))
     return data.detail
@@ -443,7 +443,7 @@ def get_all_details(domain, name, private_key):
                         account_id=account_id)
     IrohaCrypto.sign_query(query, private_key)
 
-    response = iroha_config.network.send_query(query)
+    response = iroha_config.NETWORK.send_query(query)
     data = response.account_detail_response
     print('Account id = {}, details = {}'.format(account_id, data.detail))
     return data.detail
@@ -457,12 +457,12 @@ def get_block(height):
     :return:
     """
 
-    iroha_config.iroha.blocks_query()
-    query = iroha_config.iroha.query('GetBlock',
+    iroha_config.IROHA_ADMIN.blocks_query()
+    query = iroha_config.IROHA_ADMIN.query('GetBlock',
                                      height=height)
-    IrohaCrypto.sign_query(query, iroha_config.admin_private_key)
+    IrohaCrypto.sign_query(query, iroha_config.ADMIN_PRIVATE_KEY)
 
-    block = iroha_config.network.send_query(query)
+    block = iroha_config.NETWORK.send_query(query)
     print(block)
     return block
 

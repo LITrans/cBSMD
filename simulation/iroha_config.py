@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 import datetime
-from iroha import Iroha, IrohaGrpc, IrohaCrypto
+from iroha import Iroha, IrohaGrpc
 import sys
 if sys.version_info[0] < 3:
     raise Exception('Python 3 or a more recent version is required.')

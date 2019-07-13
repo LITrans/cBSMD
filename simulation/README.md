@@ -14,25 +14,6 @@ In the file [iroha_config.py](iroha_config.py) set all configuration variables
 Here, also set the names of all domains and assets (tokens). See [iroha_config.py](iroha_config.py) 
 for a deeper understanding. 
 
-# Setup
-In the file [setup.py](setup.py) create the domains, create the nodes and set additional 
-permissions. The first step is to create domains and assets in the domain with the function
-`create_domain_and_asset`. 
-
-Then we can create passive nodes with an initial amount of assets (tokes). In order to create 
-a node you need to create a private key with `IrohaCrypto.private_key()`. Private keys are use
-to sign all transactions and nodes can only have one private key per domain. 
-
-To derive a public from the private key use `IrohaCrypto.derive_public_key(node_private_key)`.
-Public keys are use to identify nodes in the ledger.
-
-Once private and public keys are set, the administrator node can create nodes with:
-1. `create_account_with_assets`: create a passive node with a initial amount of assets (tokes)
-1. `create_account`: create a passive node with no assets
-See [setup.py](setup.py) for a deeper understanding. 
-
-To start using the cBSMD run: `python3 setup.py`
-
 # Examples
 
 In the [examples.py](examples.py) you will find some examples of the cBSMD operations. 

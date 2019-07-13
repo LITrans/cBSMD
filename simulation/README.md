@@ -1,7 +1,3 @@
-Once you have the BSMD active nodes running the network it is time to set its characteristics. 
-We need to create domains, assets, passive nodes, among others. The first step is to set the
- domain and asset names. Then we create the domains and passive nodes.
-
 # Configuration
 
 In the file [iroha_config.py](iroha_config.py) set all configuration variables

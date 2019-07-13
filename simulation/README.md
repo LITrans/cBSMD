@@ -6,7 +6,7 @@ We need to create domains, assets, passive nodes, among others. The first step i
 
 In the file [iroha_config.py](iroha_config.py) set all configuration variables
 
-`ETWORK`: setup the IP of one active node \
+`NETWORK`: setup the IP of one active node \
 `ADMIN_PRIVATE_KEY`: hardcoded key of the administrator of the network \
 `IROHA_ADMIN`: local address of the administrator of the cBSMD \
 `DEFAULT_ROLE`: default privileges of new users \

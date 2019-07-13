@@ -6,15 +6,48 @@ We need to create domains, assets, passive nodes, among others. The first step i
 
 In the file [iroha_config.py](iroha_config.py) set all configuration variables
 
-`network`: setup the IP of one active node \
-`admin_private_key`: hardcoded key of the administrator of the network \
-`iroha_admin`: local address of the administrator of the cBSMD \
-`default_role`: default privileges of new users
+`ETWORK`: setup the IP of one active node \
+`ADMIN_PRIVATE_KEY`: hardcoded key of the administrator of the network \
+`IROHA_ADMIN`: local address of the administrator of the cBSMD \
+`DEFAULT_ROLE`: default privileges of new users \
+`DOMAIN_CARBON_TAX` = domain where user pay carbon tokens for each trip \
+`DOMAIN_CARBON_PAYMENTS` = domain where user buy carbon coins that can be exchanged for carbon coins \
+`ASSET_CARBON_TAX` = name of the asset for paying trips \
+`ASSET_CARBON_PAYMENTS` = name of the asset for paying carbon tokens \
+`ASSET_PRECISION` = presicion of both assets \
+`CARBON_TAX_INIT` = initial amount of carbon takes every user starts with \
+`CARBON_COIN_INIT` = initial amount of carbon coins every user starts with \
+`GOVERNMENT_ID`: id for government \
+`GOVERNMENT_PK_TAX` = hardcoded key of the goverment in the domain carbon tax \
+`GOVERNMENT_PK_PAYMENTS` = hardcoded key of the goverment in the domain carbon payments \
+`SIMULATION_STARTS_AT` = initial time of the simulation \
+`LENGTH` = total running time in seconds of the simulation \
 
-Here, also set the names of all domains and assets (tokens). See [iroha_config.py](iroha_config.py) 
-for a deeper understanding. 
+See [iroha_config.py](iroha_config.py) for a deeper understanding. 
 
-# Examples
+# Simulation
+We have a simulation over the BSMD and a local simulation (off-blockchain). Both simulation get to
+the same results is just easy to run the local simulation since you don't need a blockchain. 
+However the local simulation accounts for all the blockchain transactions
+
+To run the local simulation do:
+```bash
+python3 simulation.py
+```
+The result of this simulation are the file `economics.csv` and `statistics.csv`. In the first file
+is the breakdown of all token and coins transactions. In the former file is the count all the 
+transactions per second
+
+To run the BSMD simulation first setup a blockchain (see [network](../network)). The run 
+```bash
+python3 create_populationBSMD.py
+
+python3 simulationBSMD.py
+```
+To see the result you can query the blockchain using functions in the file 
+[iroha_functions.py](iroha_functions.py) 
+
+# Single transactions examples
 
 In the [examples.py](examples.py) you will find some examples of the cBSMD operations. 
 Before start exploring the example run `python3 setup.py` to setup the cBSMD.

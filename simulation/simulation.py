@@ -229,7 +229,12 @@ def update_pool(current_second):
                 del pool_eligible[user_eligible]
 
 
-# loop every second
+# ############################################3
+# ############################################3
+# ############################################3
+# SIMULATION
+# #############################################3
+# #############################################3
 simulation_statistics = pd.DataFrame(columns=['time', 'users in pool', 'users in eligible pool', 'tokens pool tx',
                                               'tokens government tx', 'tokens trip tx', 'trip tx', 'total tx'])
 start_of_day = iroha_config.SIMULATION_STARTS_AT

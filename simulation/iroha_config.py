@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 import datetime
-from iroha import Iroha, IrohaGrpc
+from iroha import Iroha, IrohaGrpc, IrohaCrypto
 import sys
 if sys.version_info[0] < 3:
     raise Exception('Python 3 or a more recent version is required.')
@@ -31,6 +31,8 @@ iroha_admin = Iroha('admin@test')
 # "can_set_quorum",
 # "can_transfer"
 default_role = 'user'
+
+government_pk = '8c2a7138e7a9a20952fdbf230b78618189efe2e40cd6ef236d84465050941f9a'
 
 # Domain are groups of accounts. (small caps only)
 # This parameters are for setting the characteristics of each domain.

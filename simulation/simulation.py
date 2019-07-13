@@ -1,5 +1,4 @@
 import pandas as pd
-# import modin.pandas as pd
 import datetime
 import iroha_config
 import time
@@ -16,13 +15,23 @@ trip = pd.read_csv("cBSMD_data.csv")
 trip_data = trip.set_index('trip_id')
 # convert time to string for easy management
 trip_data['end_time'] = trip_data['end_time'].astype(str)
-# load the keys for users in domain carbontaxes
-tax_users = pd.read_csv('user_private_keys_carbontaxes.csv')
-tax_users_data = tax_users.set_index('user_id')
-# load the keys for users in domain carbonpayments
-# payment_users = pd.read_csv('user_private_keys_carbonpayments.csv')
-# payment_users_data = payment_users.set_index('user_id')
+# get all users in an array
+different_users = trip_data.drop_duplicates('user_id')
+users = []
+for index, user in different_users.iterrows():
+    users.append(user['user_id'])
 
+# create a dictionary to get all users private keys and create users in the domain_carbon_tax
+with open('user_carbon_taxes.csv', mode='w') as user_carbon_tax:
+    user_carbon_tax_writer = csv.writer(user_carbon_tax, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
+    user_carbon_tax_writer.writerow(["user_id", "tokens_left", "tokens_pay_for_trips", "tokens_bought_from_pool",
+                                     "tokens_bought_from_government", "tokens_sold"])
+    for index, user in enumerate(users):
+        user_carbon_tax_writer.writerow([user, iroha_config.CARBON_TAX_INIT, 0.0, 0.0, 0.0, 0.0])
+
+# load the keys for users in domain carbon_taxes
+tax_users = pd.read_csv('user_carbon_taxes.csv')
+tax_users_data = tax_users.set_index('user_id')
 
 # pay carbon taxes for each trip
 def pay_carbon_tax_and_register_trip(user_identification, tokens_exp):
@@ -283,7 +292,7 @@ for second in range(iroha_config.LENGTH):
                                                               },
                                                              ignore_index=True)
 
-# save econometric of the simulation
+# save simulation token statistics
 tax_users_data.to_csv('economics.csv', sep=',', encoding='utf-8')
 # save statistics of the simulation
 simulation_statistics.to_csv('statistics.csv', sep=',', encoding='utf-8')

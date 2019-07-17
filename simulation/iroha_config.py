@@ -50,7 +50,7 @@ ASSET_PRECISION = 2
 # EXPERIMENT configuration
 ######################
 # Initial time of the simulation
-SIMULATION_STARTS_AT = datetime.datetime(2019, 9, 24, 8, 00, 00)
+SIMULATION_STARTS_AT = datetime.datetime(2019, 9, 24, 00, 00, 00)
 # Length in seconds of the simulation
 LENGTH = 86400 # 24hrs
 # Initial amount of carbon tokes everyone start with

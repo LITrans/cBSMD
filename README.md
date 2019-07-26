@@ -1,5 +1,5 @@
 # cBSMD
-Flavour of [BSMD](https://github.com/billjee/bsmd) for mobility level carbon accounting and trading.
+Flavour of [BSMD](https://github.com/billjee/bsmd) for individual person level mobility carbon accounting and trading.
 
 ## Getting Started
 

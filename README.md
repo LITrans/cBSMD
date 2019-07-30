@@ -1,5 +1,5 @@
 # cBSMD
-API of the BSMD
+Flavour of [BSMD](https://github.com/billjee/bsmd) for individual person level mobility carbon accounting and trading.
 
 ## Getting Started
 

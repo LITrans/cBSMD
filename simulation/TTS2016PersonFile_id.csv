@@ -1,0 +1,10 @@
+wkt_geom,hhld_num,pers_num,id,respond,age,sex,driver_lic,tran_pass,emp_stat,occupation,no_work,stu_stat,region_emp,pd_emp,gta06_emp,gtyp_emp,free_park,region_sch,pd_sch,gta06_sch,gtyp_sch,n_pers_tri,n_tran_tri,expf
+Point (629646 4834454),160605,1,1606051,T,30,F,Y,G,F,P,O,O,1,1,67,A,N,0,0,0,B,3,2,36.9
+Point (605602 4812723),268718,1,2687181,T,76,M,Y,N,P,S,O,O,5,39,4030,M,Y,0,0,0,B,8,2,13.34
+Point (606655 4818195),132403,1,1324031,T,65,M,Y,N,F,P,O,O,5,39,4024,A,Y,0,0,0,B,8,0,13.83
+Point (646114 4850034),575720,3,5757203,F,21,M,Y,M,O,O,O,S,0,0,0,B,O,1,15,564,S,4,0,33.2
+Point (605207 4810545),153280,1,1532801,T,22,F,Y,N,F,S,N,O,5,39,4009,A,Y,0,0,0,B,4,0,32.02
+Point (606518 4812563),435065,1,4350651,T,75,M,Y,N,P,M,O,O,5,39,4014,A,Y,0,0,0,B,6,0,13.83
+Point (596566 4798599),147682,1,1476821,T,35,F,Y,N,J,S,O,O,5,40,4059,A,Y,0,0,0,B,11,0,23.18
+Point (604036 4814195),224847,1,2248471,T,85,M,Y,N,J,S,O,O,5,39,4036,A,Y,0,0,0,B,2,0,11.85
+Point (601849 4808598),155792,1,1557921,T,62,M,Y,N,H,P,O,O,5,39,4042,A,Y,0,0,0,B,4,0,20

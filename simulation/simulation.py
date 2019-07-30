@@ -13,7 +13,7 @@ pool_eligible = {}
 # load all databases. First load the trip database
 trip = pd.read_csv("cBSMD_data.csv")
 socio = pd.read_csv("TTS2016PersonFile_id.csv")
-hh = pd.read_csv("houshold.csv")
+hh = pd.read_csv("household.csv")
 # set an index to make faster lookups
 trip_data = trip.set_index('trip_id')
 socio_data = socio.set_index('id')

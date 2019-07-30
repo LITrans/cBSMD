@@ -58,9 +58,6 @@ for second in range(iroha_config.LENGTH):
         elapsed_time = time.time() - start
         print(current_time, "Elapsed time:", round(elapsed_time / 60, 2), 'minutes')
 
-    # every new slot we look in the eligible pool for users that could enter
-    update_pool(second)
-
     # get rows in panda for current time
     trips = trip_data.loc[trip_data['end_time'] == str(current_time)]
     # only count the seconds where a trip end

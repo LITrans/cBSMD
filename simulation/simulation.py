@@ -12,7 +12,7 @@ pool_eligible = {}
 
 # load all databases. First load the trip database
 trip = pd.read_csv("cBSMD_data.csv")
-socio = pd.read_csv("socio.csv")
+socio = pd.read_csv("TTS2016PersonFile_id.csv")
 hh = pd.read_csv("houshold.csv")
 # set an index to make faster lookups
 trip_data = trip.set_index('trip_id')
@@ -166,11 +166,8 @@ for token_per in token_variation:
                 tokens_trip = trip['tokens']
 
                 # pay trip, i.e., remove coins from carbontaxes
-                if tokens_trip != 0:
-                    pay_carbon_tax_and_register_trip(user_id, tokens_trip, 1, start_time, end_time, mode_prime)
-                    trip_tx_sec = trip_tx_sec + 1
-                else:
-                    register_trip()
+                pay_carbon_tax_and_register_trip(user_id, tokens_trip, 1, start_time, end_time, mode_prime)
+                trip_tx_sec = trip_tx_sec + 1
         if len(trips) != 0:
             simulation_statistics = simulation_statistics.append({'time': current_time,
                                                                   'tokens trip tx': trip_tx_sec,
